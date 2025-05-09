@@ -1,0 +1,25 @@
+{
+  "name": "lepago_service1",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "clean_windows": "(if exist node_modules rd /s /q node_modules) && (if exist .next rd /s /q .next) && (if exist out rd /s /q out) && (if exist package-lock.json rd /s /q package-lock.json)",
+    "clean_linux": "rm -rf node_modules && rm -rf .next && rm -rf out && rm -rf package-lock.json"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.1.0",
+    "http": "^0.0.1-security",
+    "lepago_service": "file:",
+    "lepago_service1": "file:",
+    "mongodb": "^6.16.0",
+    "nodemon": "^3.1.10",
+    "soap": "^1.1.11",
+    "vite": "^6.3.3"
+  },
+  "description": ""
+}

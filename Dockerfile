@@ -109,4 +109,5 @@ WORKDIR /home/node/app
 
 RUN npm install
 
+RUN npm run build
 CMD [ "node", "index.js" ]

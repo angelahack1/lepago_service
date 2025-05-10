@@ -1,3 +1,4 @@
+require('dotenv').config({ path: '.env.local' });
 const http = require('http');
 const soap = require('soap');
 const express = require('express');
@@ -21,8 +22,9 @@ const service = {
         let login_name = args.login_name;
         let public_key = args.pubkey;
         //ALM Check availability of login_name...
+        console.log(`[${new Date().toISOString()}]`,"login_name: ",login_name, ", checking availability...");
         const isUserAliasRegistered = await isThereThisUserAlias(login_name);
-        if (!isUserAliasRegistered) {
+        if (isUserAliasRegistered) {
           console.log(`[${new Date().toISOString()}] loginReg->ALREADY_REGISTERED(${login_name})`);
           return { status: "ALREADY_REGISTERED", idc: "", ciphertext: "", challenge: "" };
         }
@@ -135,5 +137,5 @@ const server = http.createServer(app);
 soap.listen(server, '/lepagoservice', service, wsdl);
 
 server.listen(PORT, () => {
-  console.log('SOAP service is running on /lepagoservice');
+  console.log(`[${new Date().toISOString()}]`,'SOAP service is running on /lepagoservice');
 });

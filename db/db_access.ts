@@ -1,10 +1,10 @@
 import { MongoClient } from 'mongodb';
-
+import { getFormattedTimestamp } from '../timestamp/timestamp';
 
 async function isUserAliasRegistered(aliasP: string): Promise<boolean> {
   const uri = process.env.MONGODB_URI;
 
-  if (!uri) throw new Error('XXXXXXXX MongoDB URI not found in environment variables');
+  if (!uri) throw new Error('MongoDB URI not found in environment variables');
   
   const client = new MongoClient(uri);
 
@@ -14,14 +14,14 @@ async function isUserAliasRegistered(aliasP: string): Promise<boolean> {
     const collection = database.collection('Usuario');
     const result = await collection.findOne({ alias: aliasP });
     if(result === null) {
-      console.log(`[${new Date().toISOString()}]`,"alias not found: ",aliasP);
+      console.log(`[${getFormattedTimestamp()}]`,"alias not found: ",aliasP);
       return false;
     } else {
-      console.log(`[${new Date().toISOString()}]`,"alias found: ",aliasP);
+      console.log(`[${getFormattedTimestamp()}]`,"alias found: ",aliasP);
       return true;
     }
   } catch (error) {
-    console.error('Error fetching users from MongoDB:', error);
+    console.error(`[${getFormattedTimestamp()}]`,'Error fetching users from MongoDB:', error);
     return true;
   } finally {
     await client.close();

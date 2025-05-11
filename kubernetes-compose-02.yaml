@@ -15,16 +15,34 @@ spec:
       labels:
         app: node-alpine
     spec:
+      volumes:
+      - name: localtime
+        hostPath:
+          path: /etc/localtime
+          type: File
       containers:
       - name: node-alpine
         image: node-alpine:2.0
         workingDir: /home/node/app
+        resources:
+          requests:
+            memory: "1024Mi"
+            cpu: "100m"
+          limits:
+            memory: "1024Mi"
+            cpu: "500m"
         env:
         - name: NODE_ENV
           value: development
+        - name: TZ
+          value: America/Mexico_City
         ports:
         - containerPort: 30000
         command: ["npm", "start"]
+        volumeMounts:
+        - name: localtime
+          mountPath: /etc/localtime
+          readOnly: true
 
 ---
 

@@ -11,11 +11,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isThereThisUserAlias = void 0;
 const mongodb_1 = require("mongodb");
+const timestamp_1 = require("../timestamp/timestamp");
 function isUserAliasRegistered(aliasP) {
     return __awaiter(this, void 0, void 0, function* () {
         const uri = process.env.MONGODB_URI;
         if (!uri)
-            throw new Error('XXXXXXXX MongoDB URI not found in environment variables');
+            throw new Error('MongoDB URI not found in environment variables');
         const client = new mongodb_1.MongoClient(uri);
         try {
             yield client.connect();
@@ -23,16 +24,16 @@ function isUserAliasRegistered(aliasP) {
             const collection = database.collection('Usuario');
             const result = yield collection.findOne({ alias: aliasP });
             if (result === null) {
-                console.log(`[${new Date().toISOString()}]`, "alias not found: ", aliasP);
+                console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, "alias not found: ", aliasP);
                 return false;
             }
             else {
-                console.log(`[${new Date().toISOString()}]`, "alias found: ", aliasP);
+                console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, "alias found: ", aliasP);
                 return true;
             }
         }
         catch (error) {
-            console.error('Error fetching users from MongoDB:', error);
+            console.error(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, 'Error fetching users from MongoDB:', error);
             return true;
         }
         finally {

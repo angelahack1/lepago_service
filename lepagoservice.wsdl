@@ -9,10 +9,11 @@
     <part name="pubkey" type="xsd:string"/>
   </message>
   <message name="loginReq">
+    <part name="login_name" type="xsd:string"/>
     <part name="idc" type="xsd:string"/>
   </message>
   <message name="challengeResp">
-    <part name="hash" type="xsd:string"/>
+    <part name="crypted_hash" type="xsd:string"/>
   </message>
   <message name="loginRegResp">
     <part name="status" type="xsd:string"/>
@@ -57,6 +58,7 @@
     <operation name="loginReq">
       <soap:operation soapAction="http://www.example.org/lepagoservice#loginReq"/>
       <input>
+        <soap:body use="literal"/>
         <soap:body use="literal"/>
       </input>
       <output>

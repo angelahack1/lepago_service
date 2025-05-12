@@ -20,6 +20,22 @@ spec:
         hostPath:
           path: /etc/localtime
           type: File
+      - name: challenges
+        hostPath:
+          path: /home/node/app/challenges.json
+          type: FileOrCreate
+      - name: public-keys
+        hostPath:
+          path: /home/node/app/public_keys.json
+          type: FileOrCreate
+      - name: shared-secrets
+        hostPath:
+          path: /home/node/app/shared_secrets.json
+          type: FileOrCreate
+      - name: idcs
+        hostPath:
+          path: /home/node/app/idcs.json
+          type: FileOrCreate
       containers:
       - name: node-alpine
         image: node-alpine:2.0

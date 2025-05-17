@@ -5,7 +5,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const QRCode = require('qrcode');
 const fs = require('fs');
-const { UserDbService } = require('./db/db_access');
+//const { UserDbService } = require('./db/db_access');
 const { getFormattedTimestamp } = require('./timestamp/timestamp');
 const AuthService = require('./ckyber/crystals_kyber');
 const{ ProofOfWork } = require('./pow/proofofwork');
@@ -18,23 +18,26 @@ app.use(bodyParser.raw({ type: () => true, limit: '5mb' }));
 // Define an async function to start the application
 async function startApp() {
   const authService = new AuthService();
-  await authService.loadFromFileAll();
+  //await authService.loadFromFileAll();
+  /*
   const dbService = new UserDbService();
   const db = await dbService.connect();
   if (!db) {
     console.error('Failed to connect to MongoDB');
     process.exit(1);
   }
-
+  */
   const service = {
     LepagoService: {
       LepagoPort: {
         loginReg: async function (args) {
+          console.log('Getting in...');
           let login_name = args.login_name;
           let public_key = args.pubkey;
 
           console.log(`[${getFormattedTimestamp()}]`, "login_name: ", login_name, ", checking availability...");
-          const isUserAliasRegistered = await dbService.isAliasRegistered(login_name);
+          //const isUserAliasRegistered = await dbService.isAliasRegistered(login_name);
+          let isUserAliasRegistered = false;
           if (isUserAliasRegistered) {
             console.log(`[${getFormattedTimestamp()}] loginReg->ALREADY_REGISTERED(${login_name})`);
             return { status: "ALREADY_REGISTERED", idc: "", ciphertext: "", challenge: "" };
@@ -52,7 +55,7 @@ async function startApp() {
           console.log(`[${getFormattedTimestamp()}]`, '(LRG) challenge: ', challengeR);
           console.log(`[${getFormattedTimestamp()}]`, '(LRG) challenge hash: ', hash);
           await authService.registerChallengeHash(login_name, hash);
-          await authService.syncToFileAll();
+          //await authService.syncToFileAll();
           console.log(`[${getFormattedTimestamp()}]`, 'Syncing to file successful');
           return { status: "OK", idc: idcR, ciphertext: `${cipherTextR}`, challenge: `${challengeR}` };
         },
@@ -104,7 +107,7 @@ async function startApp() {
   soap.listen(server, '/lepagoservice', service, wsdl);
 
   server.listen(PORT, () => {
-    console.log(`[${getFormattedTimestamp()}]`, 'SOAP service is running on /lepagoservice');
+    console.log(`[${getFormattedTimestamp()}]`, 'SOAP service is running on /lepagoservice...');
   });
 }
 

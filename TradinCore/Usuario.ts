@@ -1,9 +1,11 @@
 export interface Usuario {
     id: string;
     qr: string;
+    alias: string;
     tipos: Array<string>;
     nombres: Array<string>;
     apellidos: Array<string>;
+    crypto_assets: string;
     edad: Number;
     emails: Array<string>;
     rfc: string;

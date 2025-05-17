@@ -62,5 +62,47 @@ class UserDbService {
             }
         });
     }
+    getCatalogoEstadosUsuario() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const collection = this.db.collection(this.collectionName);
+                const result = yield collection.find({}).toArray();
+                return result.map((iter) => iter.nombre_estado);
+            }
+            catch (error) {
+                console.error(`[${(0, timestamp_1.getFormattedTimestamp)()}] Error fetching catalogo estados usuario:`, error);
+                return [];
+            }
+        });
+    }
+    getCatalogoTiposUsuario() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const collection = this.db.collection(this.collectionName);
+                const result = yield collection.find({}).toArray();
+                return result.map((iter) => iter.nombre_tipo);
+            }
+            catch (error) {
+                console.error(`[${(0, timestamp_1.getFormattedTimestamp)()}] Error fetching catalogo tipos usuario:`, error);
+                return [];
+            }
+        });
+    }
+    registerUser(usuario) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const catalogo_estados_usuario = yield this.getCatalogoEstadosUsuario();
+                const catalogo_tipos_usuario = yield this.getCatalogoTiposUsuario();
+                if (catalogo_estados_usuario.length === 0 || catalogo_tipos_usuario.length === 0) {
+                    throw new Error('Catalogo estados usuario o tipos usuario no encontrado');
+                }
+                const collection = this.db.collection(this.collectionName);
+                yield collection.insertOne(usuario);
+            }
+            catch (error) {
+                console.error(`[${(0, timestamp_1.getFormattedTimestamp)()}] Error registering user in MongoDB:`, error);
+            }
+        });
+    }
 }
 exports.UserDbService = UserDbService;

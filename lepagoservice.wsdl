@@ -12,7 +12,24 @@
     <part name="login_name" type="xsd:string"/>
     <part name="idc" type="xsd:string"/>
   </message>
+  <message name="train">
+    <part name="idc" type="xsd:string"/>
+    <part name="body" type="xsd:string"/>
+  </message>
+  <message name="trainResp">
+    <part name="status" type="xsd:string"/>
+    <part name="body" type="xsd:string"/>
+  </message>
+  <message name="imAlive">
+    <part name="idc" type="xsd:string"/>
+    <part name="body" type="xsd:string"/>
+  </message>
+  <message name="imAliveResp">
+    <part name="status" type="xsd:string"/>
+    <part name="body" type="xsd:string"/>
+  </message>
   <message name="challengeResp">
+    <part name="idc" type="xsd:string"/>
     <part name="crypted_hash" type="xsd:string"/>
   </message>
   <message name="loginRegResp">
@@ -39,6 +56,14 @@
     <operation name="challengeResp">
       <input message="tns:challengeResp"/>
       <output message="tns:SAck"/>
+    </operation>
+    <operation name="train">
+      <input message="tns:train"/>
+      <output message="tns:trainResp"/>
+    </operation>
+    <operation name="imAlive">
+      <input message="tns:imAlive"/>
+      <output message="tns:imAliveResp"/>
     </operation>
   </portType>
   <binding name="LepagoBinding" type="tns:LepagoPortType">
@@ -71,6 +96,28 @@
         <soap:body use="literal"/>
       </input>
       <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+    <operation name="train">
+      <soap:operation soapAction="http://www.example.org/lepagoservice#train"/>
+      <input>
+        <soap:body use="literal"/>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+    <operation name="imAlive">
+      <soap:operation soapAction="http://www.example.org/lepagoservice#imAlive"/>
+      <input>
+        <soap:body use="literal"/>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
         <soap:body use="literal"/>
       </output>
     </operation>

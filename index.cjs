@@ -11,7 +11,6 @@ const AuthService = require('./ckyber/crystals_kyber');
 const{ ProofOfWork } = require('./pow/proofofwork');
 
 const PORT = 30000;
-const PORT_REST = 3000;
 const app = express();
 app.use(bodyParser.raw({ type: () => true, limit: '5mb' }));
 

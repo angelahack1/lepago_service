@@ -2,6 +2,8 @@ FROM alpine:3.21
 
 ENV NODE_VERSION 23.11.0
 
+ENV TZ="America/Mexico_City"
+
 RUN addgroup -g 1000 node \
     && adduser -u 1000 -G node -s /bin/sh -D node \
     && apk add --no-cache \

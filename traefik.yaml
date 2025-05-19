@@ -1,0 +1,46 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: TraefikService
+metadata:
+  name: lepagoservice-lb
+  namespace: default
+spec:
+  weighted:
+    services:
+    - name: lepagoservice-1
+      weight: 1   # 10% of traffic
+      port: 31001
+    - name: lepagoservice-2 
+      weight: 2   # 20% of traffic
+      port: 31002
+    - name: lepagoservice-3
+      weight: 3   # 30% of traffic
+      port: 31003
+    - name: lepagoservice-4
+      weight: 4   # 40% of traffic
+      port: 31004
+    - name: lepagoservice-5
+      weight: 4   # 40% of traffic
+      port: 31005
+---
+# lepagoservice-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: lepagoservice-ingress
+  namespace: default
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+    traefik.ingress.kubernetes.io/service: lepagoservice-lb@kubernetescrd
+spec:
+  rules:
+  - host: lepagoservice.com
+    http:
+      paths:
+      - path: /lepagoservice
+        pathType: Prefix
+        backend:
+          service:
+            name: lepagoservice-lb  # Any existing service
+            port: 
+              number: 80
+---

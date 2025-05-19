@@ -115,18 +115,3 @@ spec:
       port: 31005
       targetPort: 30000
       nodePort: 31005
----
-# lepagoservice-loadbalancer.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: lepagoservice-loadbalancer-1
-  namespace: default  # Must match where Ingress looks for it
-spec:
-  type: LoadBalancer
-  ports:
-  - name: http
-    port: 32000       # Must match what Ingress expects
-    targetPort: 30000  # Must match your containerPort
-  selector:
-    app: lepagodeployment  # Must match your pod labels

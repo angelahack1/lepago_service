@@ -116,17 +116,38 @@ spec:
       targetPort: 30000
       nodePort: 31005
 ---
-# lepagoservice-loadbalancer.yaml
+# traefik-loadbalancer.yaml
 apiVersion: v1
 kind: Service
 metadata:
-  name: lepagoservice-loadbalancer-1
-  namespace: default  # Must match where Ingress looks for it
+  namespace: default
+  name: lepagoservice-lb
 spec:
-  type: LoadBalancer
+  type: ClusterIP
+  clusterIP: None
   ports:
   - name: http
-    port: 32000       # Must match what Ingress expects
-    targetPort: 30000  # Must match your containerPort
+    port: 32000
+    targetPort: 30000
   selector:
-    app: lepagodeployment  # Must match your pod labels
+    app: lepagodeployment
+---
+# lepagoservice-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: lepagoservice-ingress
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: soap
+spec:
+  rules:
+  - host: lepagoservice.com
+    http:
+      paths:
+      - path: /lepagoservice
+        pathType: Prefix
+        backend:
+          service:
+            name: lepagoservice-lb  # References the TraefikService
+            port:
+              number: 32000

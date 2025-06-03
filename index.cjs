@@ -3,12 +3,11 @@ const http = require('http');
 const soap = require('soap');
 const express = require('express');
 const bodyParser = require('body-parser');
-const QRCode = require('qrcode');
 const fs = require('fs');
-//const { UserDbService } = require('./db/db_access');
 const { getFormattedTimestamp } = require('./timestamp/timestamp');
-const AuthService = require('./ckyber/crystals_kyber');
-const{ ProofOfWork } = require('./pow/proofofwork');
+const { DBService } = require('./db/db_access.js');
+const AuthService = require('./ckyber/authservice').default;
+
 
 const PORT = 30000;
 const app = express();
@@ -16,52 +15,54 @@ app.use(bodyParser.raw({ type: () => true, limit: '5mb' }));
 
 // Define an async function to start the application
 async function startApp() {
-  const authService = new AuthService();
-  //await authService.loadFromFileAll();
-  /*
-  const dbService = new UserDbService();
-  const db = await dbService.connect();
-  if (!db) {
-    console.error('Failed to connect to MongoDB');
-    process.exit(1);
-  }
-  */
   const service = {
     LepagoService: {
       LepagoPort: {
-        loginReg: async function (args) {
+        loginReg: async function(args) {
+          console.log('>>>>>>>>>>>>>>>loginReg', args);
+          const dbService = new DBService(process.env.MONGODB_URI);
+          const db = await dbService.connect();
+          if (!db) {
+            console.error('Failed to connect to MongoDB');
+            return { status: "ERROR Failed to connect to DB", idc: "", ciphertext: "", challenge: "" };
+          }
           console.log('Getting in...');
           let login_name = args.login_name;
           let public_key = args.pubkey;
-
+      
           console.log(`[${getFormattedTimestamp()}]`, "login_name: ", login_name, ", checking availability...");
-          //const isUserAliasRegistered = await dbService.isAliasRegistered(login_name);
-          let isUserAliasRegistered = false;
+          const isUserAliasRegistered = await dbService.isAliasRegistered(login_name);
           if (isUserAliasRegistered) {
             console.log(`[${getFormattedTimestamp()}] loginReg->ALREADY_REGISTERED(${login_name})`);
-            return { status: "ALREADY_REGISTERED", idc: "", ciphertext: "", challenge: "" };
+            return { status: "ALREADY_REGISTERED according to database", idc: "", ciphertext: "", challenge: "" };
           }
           console.log(`[${getFormattedTimestamp()}]`, "pubkey on b64 to hex:", Buffer.from(public_key, 'base64').toString('hex'));
-          console.log(`[${getFormattedTimestamp()}]`, 'Encapsulating...');
+          const authService = new AuthService();
           const [cipherTextR, idcR] = await authService.registerUser(login_name, public_key);
+          if(!cipherTextR || !idcR) {
+            console.error(`[${getFormattedTimestamp()}]`,'User not registered');
+            return { status: "ERROR Authservice registering User", idc: "", ciphertext: "", challenge: "" };
+          }
           console.log(`[${getFormattedTimestamp()}]`, 'Encapsulation successful');
           const challengeR = await authService.genChallenge(login_name);
           console.log(`[${getFormattedTimestamp()}]`, 'challenge: ', challengeR);
-          const pow = new ProofOfWork(challengeR, 4);
-          const { blockData, nonce, hash } = pow.mine();
-          console.log(`[${getFormattedTimestamp()}]`, '(LRG) Mined block:', blockData);
-          console.log(`[${getFormattedTimestamp()}]`, '(LRG) Nonce:', nonce);
-          console.log(`[${getFormattedTimestamp()}]`, '(LRG) challenge: ', challengeR);
-          console.log(`[${getFormattedTimestamp()}]`, '(LRG) challenge hash: ', hash);
-          await authService.registerChallengeHash(login_name, hash);
-          //await authService.syncToFileAll();
-          console.log(`[${getFormattedTimestamp()}]`, 'Syncing to file successful');
+          console.log('<<<<<<<<<<<<<<loginReg', { status: "OK", idc: idcR, ciphertext: `${cipherTextR}`, challenge: `${challengeR}` });
+          await dbService.close();
           return { status: "OK", idc: idcR, ciphertext: `${cipherTextR}`, challenge: `${challengeR}` };
         },
-        loginReq: async function (args) {
+        loginReq: async function(args) {
+          console.log('>>>>>>>>>>>>>>>loginReq', args);
           let idc = args.idc;
           let login_nameR = args.login_name;
-          const login_name = await authService.getLoginNameFromIdc(idc);
+          const dbService = new DBService(process.env.MONGODB_URI);
+          const db = await dbService.connect();
+          if (!db) {
+            console.error('Failed to connect to MongoDB');
+            return { status: "ERROR Failed to connect to DB", idc: "", ciphertext: "", challenge: "" };
+          } else {
+            console.log('Connected to MongoDB');
+          }
+          const login_name = await dbService.getLoginNameFromIdc(idc);
           if (!login_name) {
             console.log(`[${getFormattedTimestamp()}]`, 'loginReq->IDC_NOT_FOUND(' + idc + ')');
             return { status: "IDC_NOT_FOUND", challenge: "" };
@@ -71,30 +72,38 @@ async function startApp() {
             return { status: "LOGIN_NAME_MISMATCH", challenge: "" };
           }
           console.log(`[${getFormattedTimestamp()}]`, 'login_name: ', login_name);
+          const authService = new AuthService();
           const challenge = await authService.genChallenge(login_name);
-          const pow = new ProofOfWork(challenge, 4);
-          const { blockData, nonce, hash } = pow.mine();
-          console.log(`[${getFormattedTimestamp()}]`, '(LR) Mined block:', blockData);
-          console.log(`[${getFormattedTimestamp()}]`, '(LR) Nonce:', nonce);
           console.log(`[${getFormattedTimestamp()}]`, '(LR) challenge: ', challenge);
-          console.log(`[${getFormattedTimestamp()}]`, '(LR) challenge hash: ', hash);
-          await authService.registerChallengeHash(login_name, hash);
+          console.log('<<<<<<<<<<<<<<loginReq', { status: "OK", challenge: `${challenge}` });
+          await dbService.close();
           return { status: "OK", challenge: `${challenge}` };
         },
-        challengeResp: async function (args) {
+        challengeResp: async function(args) {
+          console.log('>>>>>>>>>>>>>>challengeResp', args);
           let idc = args.idc;
           let hash = args.hash;
-          const login_name = await authService.getLoginNameFromIdc(idc);
+          const dbService = new DBService();
+          const db = await dbService.connect();
+          if (!db) {
+            console.error('Failed to connect to MongoDB');
+            return { status: "ERROR Failed to connect to DB", challenge: "" };
+          }
+          const authService = new AuthService();
+          const login_name = await dbService.getLoginNameFromIdc(idc);
           if (!login_name) {
-            console.log(`[${getFormattedTimestamp()}]`, 'loginReq->IDC_NOT_FOUND(' + idc + ')');
+            console.log(`[${getFormattedTimestamp()}]`, 'challengeResp->IDC_NOT_FOUND(' + idc + ')');
+            await dbService.close();
             return { status: "IDC_NOT_FOUND", challenge: "" };
           }
-          const challengeHash = await authService.getChallengeHash(login_name);
-          if (challengeHash != hash) {
+          const isChallengeHashValid = await authService.checkChallengeHash(login_name, hash);
+          if (!isChallengeHashValid) {
             console.log(`[${getFormattedTimestamp()}]`, 'challengeResp->HASH_MISMATCH(${challengeHash} !== ${hash})');
+            await dbService.close();
             return { status: "HASH_MISMATCH", challenge: "" };
           }
           console.log(`[${getFormattedTimestamp()}]`, 'challengeResp->OK(${idc}), hash(${hash})');
+          await dbService.close();
           return { status: "OK" };
         }
       }

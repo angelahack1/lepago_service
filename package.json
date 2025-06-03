@@ -15,16 +15,18 @@
   "dependencies": {
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "fs": "^0.0.1-security",
     "http": "^0.0.1-security",
     "lepago_service": "file:",
+    "lepago_service1": "file:",
     "mlkem": "^2.3.1",
     "mongodb": "^6.16.0",
     "qrcode": "^1.5.4",
-    "soap": "^1.1.11",
-    "fs": "^0.0.1-security"
+    "soap": "^1.1.11"
   },
   "devDependencies": {
-    "@types/node": "^22.15.17",
+    "@types/node": "^22.15.21",
+    "@types/qrcode": "^1.5.5",
     "nodemon": "^3.1.10",
     "typescript": "^5.8.3"
   },

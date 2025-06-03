@@ -8,9 +8,18 @@
     <part name="login_name" type="xsd:string"/>
     <part name="pubkey" type="xsd:string"/>
   </message>
+    <message name="loginRegResp">
+    <part name="status" type="xsd:string"/>
+    <part name="idc" type="xsd:string"/>
+    <part name="ciphertext" type="xsd:string"/>
+    <part name="challenge" type="xsd:string"/>
+  </message>
   <message name="loginReq">
     <part name="login_name" type="xsd:string"/>
     <part name="idc" type="xsd:string"/>
+  </message>
+  <message name="loginReqResp">
+    <part name="challenge" type="xsd:string"/>
   </message>
   <message name="train">
     <part name="idc" type="xsd:string"/>
@@ -18,31 +27,25 @@
   </message>
   <message name="trainResp">
     <part name="status" type="xsd:string"/>
-    <part name="body" type="xsd:string"/>
   </message>
   <message name="imAlive">
     <part name="idc" type="xsd:string"/>
-    <part name="body" type="xsd:string"/>
+    <part name="ts" type="xsd:string"/>
   </message>
   <message name="imAliveResp">
     <part name="status" type="xsd:string"/>
-    <part name="body" type="xsd:string"/>
+    <part name="ts" type="xsd:string"/>
   </message>
   <message name="challengeResp">
     <part name="idc" type="xsd:string"/>
     <part name="crypted_hash" type="xsd:string"/>
   </message>
-  <message name="loginRegResp">
+  <message name="challengeRespAck">
     <part name="status" type="xsd:string"/>
+  </message>
+  <message name="metaInfo">
     <part name="idc" type="xsd:string"/>
-    <part name="ciphertext" type="xsd:string"/>
-    <part name="challenge" type="xsd:string"/>
-  </message>
-  <message name="loginReqResp">
-    <part name="challenge" type="xsd:string"/>
-  </message>
-  <message name="SAck">
-    <part name="status" type="xsd:string"/>
+    <part name="info" type="xsd:string"/>
   </message>
   <portType name="LepagoPortType">
     <operation name="loginReg">
@@ -55,7 +58,7 @@
     </operation>
     <operation name="challengeResp">
       <input message="tns:challengeResp"/>
-      <output message="tns:SAck"/>
+      <output message="tns:challengeRespAck"/>
     </operation>
     <operation name="train">
       <input message="tns:train"/>
@@ -106,7 +109,6 @@
         <soap:body use="literal"/>
       </input>
       <output>
-        <soap:body use="literal"/>
         <soap:body use="literal"/>
       </output>
     </operation>

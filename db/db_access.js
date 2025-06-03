@@ -9,13 +9,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UserDbService = void 0;
+exports.DBService = void 0;
 const mongodb_1 = require("mongodb");
 const timestamp_1 = require("../timestamp/timestamp");
-class UserDbService {
+class DBService {
     constructor(mongoUri) {
         this.dbName = 'lepago-trading-core';
-        this.collectionName = 'Usuario';
+        this.collectionNameUsuario = 'Usuario';
+        this.collectionNameCatalogoEstadosUsuario = 'CatalogoEstadosUsuario';
+        this.collectionNameCatalogoTiposUsuario = 'CatalogoTiposUsuario';
+        this.collectionNameCryptoAssets = 'CryptoAssets';
         this.uri = mongoUri || process.env.MONGODB_URI || '';
         if (!this.uri) {
             throw new Error('MongoDB URI not found. Please provide it in constructor or set MONGODB_URI environment variable.');
@@ -34,18 +37,20 @@ class UserDbService {
             }
         });
     }
-    disconnect() {
+    close() {
         return __awaiter(this, void 0, void 0, function* () {
             if (this.client) {
                 yield this.client.close();
             }
-            console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}] MongoDB connection closed or ensured closed.`); // Optional log
+            else {
+                console.error(`[${(0, timestamp_1.getFormattedTimestamp)()}] Error closing MongoDB client.`);
+            }
         });
     }
     isAliasRegistered(alias) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const collection = this.db.collection(this.collectionName);
+                const collection = this.db.collection(this.collectionNameUsuario);
                 const result = yield collection.findOne({ alias: alias });
                 if (result === null) {
                     console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}] Alias not found: ${alias}`);
@@ -62,10 +67,24 @@ class UserDbService {
             }
         });
     }
+    getLoginNameFromIdc(idc) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const collection = this.db.collection(this.collectionNameUsuario);
+                const result = yield collection.findOne({ idc: idc });
+                console.log("Alias from IDC: <", result ? result.alias : null, ">");
+                return result ? result.alias : null;
+            }
+            catch (error) {
+                console.error(`[${(0, timestamp_1.getFormattedTimestamp)()}] Error getting login name from IDC ${idc}:`, error);
+                return null;
+            }
+        });
+    }
     getCatalogoEstadosUsuario() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const collection = this.db.collection(this.collectionName);
+                const collection = this.db.collection(this.collectionNameCatalogoEstadosUsuario);
                 const result = yield collection.find({}).toArray();
                 return result.map((iter) => iter.nombre_estado);
             }
@@ -78,7 +97,7 @@ class UserDbService {
     getCatalogoTiposUsuario() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const collection = this.db.collection(this.collectionName);
+                const collection = this.db.collection(this.collectionNameCatalogoTiposUsuario);
                 const result = yield collection.find({}).toArray();
                 return result.map((iter) => iter.nombre_tipo);
             }
@@ -88,21 +107,43 @@ class UserDbService {
             }
         });
     }
-    registerUser(usuario) {
+    registerCryptoAssets(idcP, publicKey, sharedSecret) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const catalogo_estados_usuario = yield this.getCatalogoEstadosUsuario();
-                const catalogo_tipos_usuario = yield this.getCatalogoTiposUsuario();
-                if (catalogo_estados_usuario.length === 0 || catalogo_tipos_usuario.length === 0) {
-                    throw new Error('Catalogo estados usuario o tipos usuario no encontrado');
-                }
-                const collection = this.db.collection(this.collectionName);
+                const collection = this.db.collection(this.collectionNameCryptoAssets);
+                yield collection.insertOne({ idc: idcP, public_key: publicKey, shared_secret: sharedSecret });
+            }
+            catch (error) {
+                console.error(`[${(0, timestamp_1.getFormattedTimestamp)()}] Error registering crypto assets:`, error);
+                return false;
+            }
+            return true;
+        });
+    }
+    registerUsuario(usuario) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const collection = this.db.collection(this.collectionNameUsuario);
                 yield collection.insertOne(usuario);
             }
             catch (error) {
-                console.error(`[${(0, timestamp_1.getFormattedTimestamp)()}] Error registering user in MongoDB:`, error);
+                console.error(`[${(0, timestamp_1.getFormattedTimestamp)()}] Error saving user in MongoDB:`, error);
+                return false;
+            }
+            return true;
+        });
+    }
+    //TODO: add a function to save the user info gotten from metaInfo encrypted with the shared secret
+    saveUserInfo(idcP, info) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const collection = this.db.collection(this.collectionNameUsuario);
+                yield collection.updateOne({ idc: idcP }, { $set: { info: info } });
+            }
+            catch (error) {
+                console.error(`[${(0, timestamp_1.getFormattedTimestamp)()}] Error saving user info in MongoDB:`, error);
             }
         });
     }
 }
-exports.UserDbService = UserDbService;
+exports.DBService = DBService;

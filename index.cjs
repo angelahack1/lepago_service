@@ -7,11 +7,39 @@ const fs = require('fs');
 const { getFormattedTimestamp } = require('./timestamp/timestamp');
 const { DBService } = require('./db/db_access.js');
 const AuthService = require('./ckyber/authservice').default;
+const crypto = require('crypto');
 
 
 const PORT = 30000;
 const app = express();
 app.use(bodyParser.raw({ type: () => true, limit: '5mb' }));
+
+function decryptWithSharedSecret(encryptedData, sharedSecret) {
+  console.log("decryptWithSharedSecret() -> encryptedData: ", encryptedData, " sharedSecret: ", sharedSecret);
+  // Convert base64 string back to hex
+  const encryptedDataHex = Buffer.from(encryptedData, 'base64').toString('hex');
+  console.log("decryptWithSharedSecret() -> encryptedDataHex: ", encryptedDataHex);
+  const encryptedBuffer = Buffer.from(encryptedData, 'base64');
+  // Extract IV (first 16 bytes), encrypted data, and auth tag
+  const iv = encryptedBuffer.subarray(0, 16);
+  const authTag = encryptedBuffer.subarray(-16);
+  const encryptedContent = encryptedBuffer.subarray(16, -16);
+  // Create decipher using AES-256-GCM
+  const decipher = crypto.createDecipheriv('aes-256-gcm', sharedSecret.slice(0, 32), iv);
+  decipher.setAuthTag(authTag);
+  // Decrypt the data
+  const decrypted = Buffer.concat([
+      decipher.update(encryptedContent),
+      decipher.final()
+  ]);
+  console.log('decryptWithSharedSecret() -> Decrypted data:', decrypted.toString('hex'));
+  return decrypted.toString('hex');
+}
+
+// Example usage:
+// const decryptedData = decryptWithSharedSecret(cryptedHash, unencodedSharedSecret);
+// console.log('Decrypted data:', decryptedData.toString('hex'));
+
 
 // Define an async function to start the application
 async function startApp() {
@@ -82,7 +110,7 @@ async function startApp() {
         challengeResp: async function(args) {
           console.log('>>>>>>>>>>>>>>challengeResp', args);
           let idc = args.idc;
-          let hash = args.hash;
+          let crypted_hash = args.crypted_hash;
           const dbService = new DBService();
           const db = await dbService.connect();
           if (!db) {
@@ -96,7 +124,19 @@ async function startApp() {
             await dbService.close();
             return { status: "IDC_NOT_FOUND", challenge: "" };
           }
-          const isChallengeHashValid = await authService.checkChallengeHash(login_name, hash);
+
+          //get the sharedSecret from the database
+          const sharedSecret = await dbService.getSharedSecretFromIdc(idc);
+          if (!sharedSecret) {
+            console.log(`[${getFormattedTimestamp()}]`, 'challengeResp->SHARED_SECRET_NOT_FOUND(' + login_name + ')');
+            await dbService.close();
+            return { status: "SHARED_SECRET_NOT_FOUND", challenge: "" };
+          }
+
+          const decryptedHash = decryptWithSharedSecret(crypted_hash, sharedSecret);
+          console.log('decryptWithSharedSecret() -> Decrypted hash:', decryptedHash);
+
+          const isChallengeHashValid = await authService.checkChallengeHash(login_name, decryptedHash);
           if (!isChallengeHashValid) {
             console.log(`[${getFormattedTimestamp()}]`, 'challengeResp->HASH_MISMATCH(${challengeHash} !== ${hash})');
             await dbService.close();

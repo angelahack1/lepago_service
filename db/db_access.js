@@ -18,7 +18,7 @@ class DBService {
         this.collectionNameUsuario = 'Usuario';
         this.collectionNameCatalogoEstadosUsuario = 'CatalogoEstadosUsuario';
         this.collectionNameCatalogoTiposUsuario = 'CatalogoTiposUsuario';
-        this.collectionNameCryptoAssets = 'CryptoAssets';
+        this.collectionNameCryptoArtifacts = 'CryptoArtifacts';
         this.uri = mongoUri || process.env.MONGODB_URI || '';
         if (!this.uri) {
             throw new Error('MongoDB URI not found. Please provide it in constructor or set MONGODB_URI environment variable.');
@@ -81,6 +81,23 @@ class DBService {
             }
         });
     }
+    getSharedSecretFromIdc(idc) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const collection = this.db.collection(this.collectionNameCryptoArtifacts);
+                const result = yield collection.findOne({ idc: idc });
+                console.log("Shared secret from IDC: <", result ? result.shared_secret : null, ">");
+                if (!(result === null || result === void 0 ? void 0 : result.shared_secret))
+                    return null;
+                const undecodedSharedSecret = Buffer.from(result.shared_secret, 'base64');
+                return undecodedSharedSecret;
+            }
+            catch (error) {
+                console.error(`[${(0, timestamp_1.getFormattedTimestamp)()}] Error getting shared secret from IDC ${idc}:`, error);
+                return null;
+            }
+        });
+    }
     getCatalogoEstadosUsuario() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -110,7 +127,7 @@ class DBService {
     registerCryptoAssets(idcP, publicKey, sharedSecret) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const collection = this.db.collection(this.collectionNameCryptoAssets);
+                const collection = this.db.collection(this.collectionNameCryptoArtifacts);
                 yield collection.insertOne({ idc: idcP, public_key: publicKey, shared_secret: sharedSecret });
             }
             catch (error) {

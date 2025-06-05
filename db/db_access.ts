@@ -3,7 +3,7 @@ import { getFormattedTimestamp } from '../timestamp/timestamp';
 import { Usuario } from '../TradinCore/Usuario';
 import { CatalogoEstadosUsuario } from '../TradinCore/CatalogoEstadosUsuario';
 import { CatalogoTiposUsuario } from '../TradinCore/CatalogoTiposUsuario';
-import { CryptoAssets } from '../TradinCore/CryptoAssets';
+import { CryptoArtifacts } from '../TradinCore/CryptoArtifacts';
 
 export class DBService {
   private uri: string;
@@ -12,7 +12,7 @@ export class DBService {
   private collectionNameUsuario: string = 'Usuario';
   private collectionNameCatalogoEstadosUsuario: string = 'CatalogoEstadosUsuario';
   private collectionNameCatalogoTiposUsuario: string = 'CatalogoTiposUsuario';
-  private collectionNameCryptoAssets: string = 'CryptoAssets';
+  private collectionNameCryptoArtifacts: string = 'CryptoArtifacts';
   private db!: Db;
 
   constructor(mongoUri?: string) {
@@ -71,11 +71,25 @@ export class DBService {
     }
   }
 
+  public async getSharedSecretFromIdc(idc: string) {
+    try {
+      const collection: Collection<CryptoArtifacts> = this.db.collection(this.collectionNameCryptoArtifacts);
+      const result = await collection.findOne({ idc: idc });
+      console.log("Shared secret from IDC: <", result ? result.shared_secret : null, ">");
+      if (!result?.shared_secret) return null;
+      const undecodedSharedSecret = Buffer.from(result.shared_secret, 'base64');
+      return undecodedSharedSecret;
+    } catch (error) {
+      console.error(`[${getFormattedTimestamp()}] Error getting shared secret from IDC ${idc}:`, error);
+      return null;
+    }
+  }
+
   private async getCatalogoEstadosUsuario(): Promise<Array<string>> {
     try {
       const collection: Collection<CatalogoEstadosUsuario> = this.db.collection(this.collectionNameCatalogoEstadosUsuario);
       const result = await collection.find({}).toArray();
-      return result.map((iter) => iter.nombre_estado);
+      return result.map((iter: CatalogoEstadosUsuario) => iter.nombre_estado);
     } catch (error) {
       console.error(`[${getFormattedTimestamp()}] Error fetching catalogo estados usuario:`, error);
       return [];
@@ -86,7 +100,7 @@ export class DBService {
     try {
       const collection: Collection<CatalogoTiposUsuario> = this.db.collection(this.collectionNameCatalogoTiposUsuario);
       const result = await collection.find({}).toArray();
-      return result.map((iter) => iter.nombre_tipo);
+      return result.map((iter: CatalogoTiposUsuario) => iter.nombre_tipo);
     } catch (error) {
       console.error(`[${getFormattedTimestamp()}] Error fetching catalogo tipos usuario:`, error);
       return [];
@@ -95,7 +109,7 @@ export class DBService {
 
   public async registerCryptoAssets(idcP: string, publicKey: string, sharedSecret: string): Promise<boolean> {
     try {
-      const collection: Collection<CryptoAssets> = this.db.collection(this.collectionNameCryptoAssets);
+      const collection: Collection<CryptoArtifacts> = this.db.collection(this.collectionNameCryptoArtifacts);
       await collection.insertOne({ idc: idcP, public_key: publicKey, shared_secret: sharedSecret });
     } catch (error) {
       console.error(`[${getFormattedTimestamp()}] Error registering crypto assets:`, error);

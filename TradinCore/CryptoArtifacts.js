@@ -1,4 +1,4 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.crypto_assets = void 0;
-exports.crypto_assets = [];
+exports.crypto_artifacts = void 0;
+exports.crypto_artifacts = [];

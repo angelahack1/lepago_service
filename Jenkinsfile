@@ -5,7 +5,6 @@ pipeline {
         stage('Clean Project') {
             steps {
                 echo '--- Cleaning the project ---'
-                bat 'npm run clean_windows'
                 bat 'kubectl delete -f nodeport.yaml'
             }
         }

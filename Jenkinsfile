@@ -5,28 +5,28 @@ pipeline {
         stage('Clean Project') {
             steps {
                 echo '--- Cleaning the project ---'
-                sh 'npm clean'
+                npm clean
             }
         }
 
         stage('Install Dependencies') {
             steps {
                 echo '--- Installing project dependencies ---'
-                sh 'npm install'
+                npm install
             }
         }
 
         stage('Build Project') {
             steps {
                 echo '--- Building the project ---'
-                sh 'npm run build'
+                npm run build
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
                 echo '--- Deploying to Kubernetes ---'
-                sh 'kubectl apply -f nodeport.yaml'
+                kubectl apply -f nodeport.yaml
             }
         }
     }

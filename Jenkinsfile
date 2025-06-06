@@ -5,7 +5,7 @@ pipeline {
         stage('Clean Project') {
             steps {
                 echo '--- Cleaning the project ---'
-                bat 'npm clean'
+                bat 'npm run clean_windows'
             }
         }
 

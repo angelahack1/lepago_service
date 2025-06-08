@@ -21,12 +21,16 @@ function decryptWithSharedSecret(encryptedData, sharedSecret) {
   console.log("decryptWithSharedSecret() -> encryptedDataHex: ", encryptedDataHex);
   const encryptedBuffer = Buffer.from(encryptedData, 'base64');
   // Extract IV (first 16 bytes), encrypted data, and auth tag
-  const iv = encryptedBuffer.subarray(0, 16);
-  const authTag = encryptedBuffer.subarray(-16);
-  const encryptedContent = encryptedBuffer.subarray(16, -16);
+  const iv = encryptedBuffer.slice(0, 16);
+  const authTag = encryptedBuffer.slice(-16);
+  const encryptedContent = encryptedBuffer.slice(16, -16);
+  console.log("decryptWithSharedSecret() -> iv: ", iv);
+  console.log("decryptWithSharedSecret() -> authTag: ", authTag);
+  console.log("decryptWithSharedSecret() -> encryptedContent: ", encryptedContent);
   // Create decipher using AES-256-GCM
   const decipher = crypto.createDecipheriv('aes-256-gcm', sharedSecret.slice(0, 32), iv);
-  decipher.setAuthTag(authTag);
+  console.log("decryptWithSharedSecret() -> decipher: ", decipher);
+  console.log("decryptWithSharedSecret() -> decipher.setAuthTag(authTag): ", decipher.setAuthTag(authTag));
   // Decrypt the data
   const decrypted = Buffer.concat([
       decipher.update(encryptedContent),

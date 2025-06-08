@@ -103,6 +103,7 @@ export class DBService {
       console.log(`[${getFormattedTimestamp()}]`,'getSharedSecretFromIdc()->Shared secret from IDC: <', result ? result.shared_secret : null, ">");
       if (!result?.shared_secret) return null;
       const undecodedSharedSecret = Buffer.from(result.shared_secret, 'base64');
+      console.log(`[${getFormattedTimestamp()}]`,'getSharedSecretFromIdc()->Undecoded shared secret: <', undecodedSharedSecret, ">");
       return undecodedSharedSecret;
     } catch (error) {
       console.error(`[${getFormattedTimestamp()}] Error getting shared secret from IDC ${idc}:`, error);

@@ -114,6 +114,7 @@ class DBService {
                 if (!(result === null || result === void 0 ? void 0 : result.shared_secret))
                     return null;
                 const undecodedSharedSecret = Buffer.from(result.shared_secret, 'base64');
+                console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, 'getSharedSecretFromIdc()->Undecoded shared secret: <', undecodedSharedSecret, ">");
                 return undecodedSharedSecret;
             }
             catch (error) {

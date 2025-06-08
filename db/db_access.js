@@ -118,10 +118,8 @@ class DBService {
             }
             catch (error) {
                 console.error(`[${(0, timestamp_1.getFormattedTimestamp)()}] Error getting shared secret from IDC ${idc}:`, error);
-                console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, '...getSharedSecretFromIdc() error');
                 return null;
             }
-            console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, '...getSharedSecretFromIdc() success');
         });
     }
     getCatalogoEstadosUsuario() {

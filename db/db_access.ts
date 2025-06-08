@@ -141,11 +141,11 @@ export class DBService {
     console.log(`[${getFormattedTimestamp()}]`,'...getCatalogoTiposUsuario() success');
   }
 
-  public async registerCryptoAssets(idcP: string, publicKey: string, cipherTextEncoded: string): Promise<boolean> {
+  public async registerCryptoAssets(idcP: string, publicKey: string, sharedSecretEncoded: string): Promise<boolean> {
     console.log(`[${getFormattedTimestamp()}]`,'registerCryptoAssets()...');
     try {
       const collection: Collection<CryptoArtifacts> = this.db.collection(this.collectionNameCryptoArtifacts);
-      await collection.insertOne({ idc: idcP, public_key: publicKey,  shared_secret: cipherTextEncoded });
+      await collection.insertOne({ idc: idcP, public_key: publicKey,  shared_secret: sharedSecretEncoded });
     } catch (error) {
       console.error(`[${getFormattedTimestamp()}] Error registering crypto assets:`, error);
       console.log(`[${getFormattedTimestamp()}]`,'...registerCryptoAssets() error');

@@ -47,11 +47,13 @@ class AuthService {
             return [ null, null ];
         }
         var cipherTextEncoded = Buffer.from(ciphertext).toString('base64');
+        var sharedSecretEncoded = Buffer.from(sharedSecret).toString('base64');
         console.log(`[${getFormattedTimestamp()}]`,'registerUser()->Ciphertext: ',cipherTextEncoded);
+        console.log(`[${getFormattedTimestamp()}]`,'registerUser()->Shared secret: ',sharedSecretEncoded);
         const idc = await this.getNextIdcAtomically();
         const idcS = idc.toString();
         console.log(`[${getFormattedTimestamp()}]`,'registerUser()->About to register Crypto Assets with idcS: ', idcS);
-        const crypto_assets_registered = await dbService.registerCryptoAssets(idcS, originalPublicKey.toString('base64'), cipherTextEncoded);
+        const crypto_assets_registered = await dbService.registerCryptoAssets(idcS, originalPublicKey.toString('base64'), sharedSecretEncoded);
         console.log(`[${getFormattedTimestamp()}]`,'registerUser()->crypto_assets_registered: ', crypto_assets_registered);
         if(!crypto_assets_registered) {
           console.error(`[${getFormattedTimestamp()}]`,'Crypto assets not registered');

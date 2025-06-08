@@ -35,6 +35,8 @@ class AuthService {
         const db = await dbService.connect();
         if(!db) {
           throw new Error('Failed to connect to MongoDB');
+        } else {
+          console.log(`[${getFormattedTimestamp()}]`,'registerUser()->Connected to MongoDB');
         }
         Atomics.store(AuthService.idc_counter_sarray_view, 0, 0);
         console.log(`[${getFormattedTimestamp()}]`,'registerUser()->Registering user: ',login_name);
@@ -49,7 +51,7 @@ class AuthService {
         const idc = await this.getNextIdcAtomically();
         const idcS = idc.toString();
         console.log(`[${getFormattedTimestamp()}]`,'registerUser()->About to register Crypto Assets with idcS: ', idcS);
-        const crypto_assets_registered = await dbService.registerCryptoAssets(idcS, originalPublicKey.toString('base64'), sharedSecret.toString('base64'));
+        const crypto_assets_registered = await dbService.registerCryptoAssets(idcS, originalPublicKey.toString('base64'), cipherTextEncoded);
         console.log(`[${getFormattedTimestamp()}]`,'registerUser()->crypto_assets_registered: ', crypto_assets_registered);
         if(!crypto_assets_registered) {
           console.error(`[${getFormattedTimestamp()}]`,'Crypto assets not registered');

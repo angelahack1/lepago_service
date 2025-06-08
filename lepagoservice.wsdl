@@ -97,6 +97,7 @@
       <soap:operation soapAction="http://www.example.org/lepagoservice#challengeResp"/>
       <input>
         <soap:body use="literal"/>
+        <soap:body use="literal"/>
       </input>
       <output>
         <soap:body use="literal"/>

@@ -106,10 +106,8 @@ export class DBService {
       return undecodedSharedSecret;
     } catch (error) {
       console.error(`[${getFormattedTimestamp()}] Error getting shared secret from IDC ${idc}:`, error);
-      console.log(`[${getFormattedTimestamp()}]`,'...getSharedSecretFromIdc() error');
       return null;
     }
-    console.log(`[${getFormattedTimestamp()}]`,'...getSharedSecretFromIdc() success');
   }
 
   private async getCatalogoEstadosUsuario(): Promise<Array<string>> {

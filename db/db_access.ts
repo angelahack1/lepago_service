@@ -108,34 +108,43 @@ export class DBService {
   }
 
   public async registerCryptoAssets(idcP: string, publicKey: string, sharedSecret: string): Promise<boolean> {
+    console.log('registerCryptoAssets()...');
     try {
       const collection: Collection<CryptoArtifacts> = this.db.collection(this.collectionNameCryptoArtifacts);
       await collection.insertOne({ idc: idcP, public_key: publicKey, shared_secret: sharedSecret });
     } catch (error) {
       console.error(`[${getFormattedTimestamp()}] Error registering crypto assets:`, error);
+      console.log('...registerCryptoAssets() error');
       return false;
     }
+    console.log('...registerCryptoAssets() success');
     return true;
   }
 
   public async registerUsuario(usuario: Usuario): Promise<boolean> {
+    console.log('registerUsuario()...');
     try {
       const collection: Collection<Usuario> = this.db.collection(this.collectionNameUsuario);
       await collection.insertOne(usuario);
     } catch (error) {
       console.error(`[${getFormattedTimestamp()}] Error saving user in MongoDB:`, error);
+      console.log('...registerUsuario() error');
       return false;
     }
+    console.log('...registerUsuario() success');
     return true;
   }
 
   //TODO: add a function to save the user info gotten from metaInfo encrypted with the shared secret
   public async saveUserInfo(idcP: string, info: string): Promise<void> {
+    console.log('saveUserInfo()...');
     try {
       const collection: Collection<Usuario> = this.db.collection(this.collectionNameUsuario);
       await collection.updateOne({ idc: idcP }, { $set: { info: info } });
     } catch (error) {
       console.error(`[${getFormattedTimestamp()}] Error saving user info in MongoDB:`, error);
+      console.log('...saveUserInfo() error');
     }
+    console.log('...saveUserInfo() success');
   }
 }

@@ -23,8 +23,10 @@ class AuthService {
     }
 
     private async getNextIdcAtomically(): Promise<string> {
+      console.log('getNextIdcAtomically()...');
         const previousCounterValue = Atomics.add(AuthService.idc_counter_sarray_view, 0, 1);
         const idc = await this.getMillisecondsSince1900() + previousCounterValue;
+        console.log('...getNextIdcAtomically() idc: ', idc);
         return idc.toString();
     }
 
@@ -45,7 +47,9 @@ class AuthService {
         console.log(`[${getFormattedTimestamp()}]`,'Ciphertext: ',cipherTextEncoded);
         const idc = await this.getNextIdcAtomically();
         const idcS = idc.toString();
+        console.log('About to register Crypto Assets with idcS: ', idcS);
         const crypto_assets_registered = await dbService.registerCryptoAssets(idcS, originalPublicKey.toString('base64'), sharedSecret.toString('base64'));
+        console.log('crypto_assets_registered: ', crypto_assets_registered);
         if(!crypto_assets_registered) {
           console.error(`[${getFormattedTimestamp()}]`,'Crypto assets not registered');
           return [ null, null ];

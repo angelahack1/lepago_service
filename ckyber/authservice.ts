@@ -32,7 +32,8 @@ class AuthService {
     public async registerUser(login_name: string, publicKey: any): Promise<[string | null, string | null]> {
       console.log(`[${getFormattedTimestamp()}]`,'registerUser()...');
         const dbService = new DBService();
-        if(!(await dbService.connect())) {
+        const db = await dbService.connect();
+        if(!db) {
           throw new Error('Failed to connect to MongoDB');
         }
         Atomics.store(AuthService.idc_counter_sarray_view, 0, 0);

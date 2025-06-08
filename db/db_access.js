@@ -126,40 +126,49 @@ class DBService {
     }
     registerCryptoAssets(idcP, publicKey, sharedSecret) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log('registerCryptoAssets()...');
             try {
                 const collection = this.db.collection(this.collectionNameCryptoArtifacts);
                 yield collection.insertOne({ idc: idcP, public_key: publicKey, shared_secret: sharedSecret });
             }
             catch (error) {
                 console.error(`[${(0, timestamp_1.getFormattedTimestamp)()}] Error registering crypto assets:`, error);
+                console.log('...registerCryptoAssets() error');
                 return false;
             }
+            console.log('...registerCryptoAssets() success');
             return true;
         });
     }
     registerUsuario(usuario) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log('registerUsuario()...');
             try {
                 const collection = this.db.collection(this.collectionNameUsuario);
                 yield collection.insertOne(usuario);
             }
             catch (error) {
                 console.error(`[${(0, timestamp_1.getFormattedTimestamp)()}] Error saving user in MongoDB:`, error);
+                console.log('...registerUsuario() error');
                 return false;
             }
+            console.log('...registerUsuario() success');
             return true;
         });
     }
     //TODO: add a function to save the user info gotten from metaInfo encrypted with the shared secret
     saveUserInfo(idcP, info) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log('saveUserInfo()...');
             try {
                 const collection = this.db.collection(this.collectionNameUsuario);
                 yield collection.updateOne({ idc: idcP }, { $set: { info: info } });
             }
             catch (error) {
                 console.error(`[${(0, timestamp_1.getFormattedTimestamp)()}] Error saving user info in MongoDB:`, error);
+                console.log('...saveUserInfo() error');
             }
+            console.log('...saveUserInfo() success');
         });
     }
 }

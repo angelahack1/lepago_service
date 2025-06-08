@@ -18,28 +18,31 @@ const fs = require('fs');
 const { MlKem1024 } = require('mlkem');
 class AuthService {
     constructor() {
-        console.log('Autservice::constructor()...');
-        console.log('kem: ', AuthService.kem);
-        console.log('challengeHashes: ', AuthService.challengeHashes);
-        console.log('buffer: ', AuthService.buffer);
-        console.log('idc_counter_sarray_view: ', AuthService.idc_counter_sarray_view);
-        console.log('...Autservice::constructor()');
+        console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, 'Autservice::constructor()...');
+        console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, 'kem: ', AuthService.kem);
+        console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, 'challengeHashes: ', AuthService.challengeHashes);
+        console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, 'buffer: ', AuthService.buffer);
+        console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, 'idc_counter_sarray_view: ', AuthService.idc_counter_sarray_view);
+        console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, '...Autservice::constructor()');
     }
     getNextIdcAtomically() {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, 'getNextIdcAtomically()...');
             const previousCounterValue = Atomics.add(AuthService.idc_counter_sarray_view, 0, 1);
             const idc = (yield this.getMillisecondsSince1900()) + previousCounterValue;
+            console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, '...getNextIdcAtomically() idc: ', idc);
             return idc.toString();
         });
     }
     registerUser(login_name, publicKey) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, 'registerUser()...');
             const dbService = new db_access_1.DBService();
             if (!dbService.connect()) {
                 throw new Error('Failed to connect to MongoDB');
             }
             Atomics.store(AuthService.idc_counter_sarray_view, 0, 0);
-            console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, 'Registering user: ', login_name);
+            console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, 'registerUser()->Registering user: ', login_name);
             const originalPublicKey = Buffer.from(publicKey, 'base64');
             const [ciphertext, sharedSecret] = yield AuthService.kem.encap(originalPublicKey);
             if (!ciphertext || !sharedSecret) {
@@ -47,10 +50,12 @@ class AuthService {
                 return [null, null];
             }
             var cipherTextEncoded = Buffer.from(ciphertext).toString('base64');
-            console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, 'Ciphertext: ', cipherTextEncoded);
+            console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, 'registerUser()->Ciphertext: ', cipherTextEncoded);
             const idc = yield this.getNextIdcAtomically();
             const idcS = idc.toString();
+            console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, 'registerUser()->About to register Crypto Assets with idcS: ', idcS);
             const crypto_assets_registered = yield dbService.registerCryptoAssets(idcS, originalPublicKey.toString('base64'), sharedSecret.toString('base64'));
+            console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, 'registerUser()->crypto_assets_registered: ', crypto_assets_registered);
             if (!crypto_assets_registered) {
                 console.error(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, 'Crypto assets not registered');
                 return [null, null];
@@ -74,7 +79,7 @@ class AuthService {
                 console.error(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, 'User not registered');
                 return [null, null];
             }
-            console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, 'User Registered successfully');
+            console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, 'registerUser()->User Registered successfully');
             return [cipherTextEncoded, idcS];
         });
     }

@@ -70,7 +70,8 @@ class AuthService {
         return __awaiter(this, void 0, void 0, function* () {
             console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, 'registerUser()...');
             const dbService = new db_access_1.DBService();
-            if (!(yield dbService.connect())) {
+            const db = yield dbService.connect();
+            if (!db) {
                 throw new Error('Failed to connect to MongoDB');
             }
             Atomics.store(AuthService.idc_counter_sarray_view, 0, 0);

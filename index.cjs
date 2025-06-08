@@ -28,10 +28,6 @@ function decryptWithSharedSecret(encryptedData, sharedSecret) {
   console.log("decryptWithSharedSecret() -> authTag: ", authTag);
   console.log("decryptWithSharedSecret() -> encryptedContent: ", encryptedContent);
   // Create decipher using AES-256-GCM
-  //Convert sharedSecret wich is cipherText to sharedSecret using KEM
-  
-  //TODO ALM: Store the sharedSecret in the database as cipherTextEncoded...
-
   const decipher = crypto.createDecipheriv('aes-256-gcm', sharedSecret.slice(0, 32), iv);
   console.log("decryptWithSharedSecret() -> decipher: ", decipher);
   console.log("decryptWithSharedSecret() -> decipher.setAuthTag(authTag): ", decipher.setAuthTag(authTag));

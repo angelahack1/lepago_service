@@ -2,10 +2,13 @@ import { Timestamp } from 'mongodb';
 
 export interface Usuario {
     qr: string;
-    alias: string;
     idc: string;
-    estados: Array<string>;
+    alias: string;
     tipos: Array<string>;
+    estados: Array<string>;
+    cuentas: Array<string>;
+    negocios: Array<string>;
+    compras: Array<string>;
     nombres: Array<string>;
     apellidos: Array<string>;
     edad: Number;

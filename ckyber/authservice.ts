@@ -3,12 +3,11 @@ import { DBService } from '../db/db_access';
 import { ProofOfWork } from '../pow/proofofwork';
 import { Timestamp } from 'mongodb';
 import type { Usuario } from '../TradinCore/Usuario';
-const nodeCrypto = require('crypto');
-const fs = require('fs');
-const { MlKem1024 } = require('mlkem');
+import * as nodeCrypto from 'crypto';
+import { MlKem1024 } from 'mlkem';
 
 class AuthService {
-    private static kem: typeof MlKem1024 = new MlKem1024();
+    private static kem = new (MlKem1024 as any)();
     private static challengeHashes: Map<string, string> = new Map<string, string>();
     private static buffer = new SharedArrayBuffer(4);
     private static idc_counter_sarray_view: Int32Array = new Int32Array(AuthService.buffer);
@@ -33,7 +32,7 @@ class AuthService {
     public async registerUser(login_name: string, publicKey: any): Promise<[string | null, string | null]> {
       console.log(`[${getFormattedTimestamp()}]`,'registerUser()...');
         const dbService = new DBService();
-        if(!dbService.connect()) {
+        if(!(await dbService.connect())) {
           throw new Error('Failed to connect to MongoDB');
         }
         Atomics.store(AuthService.idc_counter_sarray_view, 0, 0);
@@ -58,10 +57,13 @@ class AuthService {
 
         const usuario: Usuario = {
             qr: '01',
-            alias: login_name,
             idc: idcS,
-            estados: ['Registrando'],
+            alias: login_name,
             tipos: [],
+            estados: ['Registrando'],
+            cuentas: [],
+            negocios: [],
+            compras: [],
             nombres: [],
             apellidos: [],
             edad: 0,

@@ -26,7 +26,7 @@ pipeline {
             steps {
                 echo '--- Building the project ---'
                 bat 'npm run build'
-                bat 'copy E:\Developments\lepago_service\.env.local .env.local'
+                bat 'copy E:\\Developments\\lepago_service\\.env.local .env.local'
                 bat 'pause 5'
                 bat 'docker build -t lepagoservice:1.0 .'
             }

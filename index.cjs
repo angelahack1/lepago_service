@@ -45,11 +45,6 @@ function decryptWithSharedSecret(encryptedData, sharedSecret) {
   }
 }
 
-// Example usage:
-// const decryptedData = decryptWithSharedSecret(cryptedHash, unencodedSharedSecret);
-// console.log('Decrypted data:', decryptedData.toString('hex'));
-
-
 // Define an async function to start the application
 async function startApp() {
   const service = {

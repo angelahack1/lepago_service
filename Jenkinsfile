@@ -6,6 +6,12 @@ pipeline {
             steps {
                 echo '--- Cleaning the project ---'
                 bat 'kubectl delete -f nodeport.yaml --ignore-not-found=true'
+                bat 'pause 10'
+                bat 'kubectl delete -f nodeport.yaml --ignore-not-found=true'
+                bat 'pause 10'
+                bat 'docker image rm -f lepagoservice:1.0 || true'
+                bat 'pause 10'
+                bat 'docker image rm -f lepagoservice:1.0 || true'
             }
         }
 
@@ -20,6 +26,9 @@ pipeline {
             steps {
                 echo '--- Building the project ---'
                 bat 'npm run build'
+                bat 'copy E:\Developments\lepago_service\.env.local .env.local'
+                bat 'pause 5'
+                bat 'docker build -t lepagoservice:1.0 .'
             }
         }
 

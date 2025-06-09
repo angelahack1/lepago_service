@@ -9,10 +9,10 @@ pipeline {
                 bat 'pause 10'
                 bat 'kubectl delete -f nodeport.yaml --ignore-not-found=true'
                 bat 'pause 10'
-                bat 'docker image rm -f lepagoservice:1.0 || true'
+                bat 'docker image rm -f lepagoservice:1.0 2>nul || exit 0'
                 bat 'pause 10'
-                bat 'docker image rm -f lepagoservice:1.0 || true'
-                bat 'npm run clean_windows || true'
+                bat 'docker image rm -f lepagoservice:1.0 2>nul || exit 0'
+                bat 'npm run clean_windows 2>nul || exit 0'
             }
         }
 

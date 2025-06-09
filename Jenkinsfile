@@ -12,20 +12,13 @@ pipeline {
                 bat 'docker image rm -f lepagoservice:1.0 || true'
                 bat 'pause 10'
                 bat 'docker image rm -f lepagoservice:1.0 || true'
-            }
-        }
-
-        stage('Install Dependencies') {
-            steps {
-                echo '--- Installing project dependencies ---'
-                bat 'npm install'
+                bat 'npm run clean_windows || true'
             }
         }
 
         stage('Build Project') {
             steps {
                 echo '--- Building the project ---'
-                bat 'npm run build'
                 bat 'copy E:\\Developments\\lepago_service\\.env.local .env.local'
                 bat 'pause 5'
                 bat 'docker build -t lepagoservice:1.0 .'

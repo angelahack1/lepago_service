@@ -61,7 +61,7 @@ async function startApp() {
           console.log('Getting in...');
           let login_name = args.login_name;
           let public_key = args.pubkey;
-          console.log("About to clean the strings...");
+          console.log("About to clean the strings, login_name: <", login_name, "> public_key: <", public_key+">");
           var cleanedString = login_name.replace(/\r|\n/g, "");
           login_name = cleanedString;
           cleanedString = public_key.replace(/\r|\n/g, "");

@@ -59,8 +59,8 @@ async function startApp() {
             return { status: "ERROR Failed to connect to DB", idc: "", ciphertext: "", challenge: "" };
           }
           console.log('Getting in...');
-          let login_name = args.login_name;
-          let public_key = args.pubkey;
+          let login_name = args.login_name.toString();
+          let public_key = args.pubkey.toString();
           console.log("About to clean the strings, login_name: <", login_name, "> public_key: <", public_key+">");
           var cleanedString = login_name.replace(/\r|\n/g, "");
           login_name = cleanedString;

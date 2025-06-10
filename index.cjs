@@ -59,13 +59,6 @@ async function startApp() {
             return { status: "ERROR Failed to connect to DB", idc: "", ciphertext: "", challenge: "" };
           }
           console.log('Getting in...');
-
-
-          //TODO ALM: Check how to use the correct soap specification...
-
-          
-          let login_name = args.login_name.$value;
-          let public_key = args.pubkey.$value;
           console.log("About to clean the strings, login_name: <", login_name, "> public_key: <", public_key+">");
           var cleanedString = login_name.replace(/\r|\n/g, "");
           login_name = cleanedString;
@@ -108,7 +101,7 @@ async function startApp() {
             console.log(`[${getFormattedTimestamp()}] loginReg->ALREADY_REGISTERED(${login_name})`);
             return { status: "ALREADY_REGISTERED according to database", idc: "", ciphertext: "", challenge: "" };
           }
-          console.log(`[${getFormattedTimestamp()}]`, "pubkey on b64 to hex:", Buffer.from(public_key, 'base64').toString('hex'));
+          console.log(`[${getFormattedTimestamp()}]`, "public_key on b64 to hex:", Buffer.from(public_key, 'base64').toString('hex'));
           const authService = new AuthService();
           const [cipherTextR, idcR] = await authService.registerUser(login_name, public_key);
           if(!cipherTextR || !idcR) {
@@ -199,7 +192,7 @@ async function startApp() {
   soap.listen(server, '/lepagoservice', service, wsdl);
 
   server.listen(PORT, () => {
-    console.log(`[${getFormattedTimestamp()}]`, 'SOAP service v 0.98.0 (2025-06-09 at 21:42 hrs.) is running on /lepagoservice...');
+    console.log(`[${getFormattedTimestamp()}]`, 'SOAP service v 0.110.0 (2025-06-10 at 15:37 hrs.) is running on /lepagoservice...');
   });
 }
 

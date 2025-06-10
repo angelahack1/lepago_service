@@ -63,15 +63,17 @@ export class DBService {
   }
 
   public async isAliasRegistered(alias: string): Promise<boolean> {
+    console.log(`[${getFormattedTimestamp()}]`,'isAliasRegistered()...');
+    console.log(`[${getFormattedTimestamp()}]`,'isAliasRegistered()->Alias: <', alias, ">");
     try {
       const collection: Collection<Usuario> = this.db.collection(this.collectionNameUsuario);
       const result = await collection.findOne({ alias: alias });
 
       if (result === null) {
-        console.log(`[${getFormattedTimestamp()}] Alias not found: ${alias}`);
+        console.log(`[${getFormattedTimestamp()}]`,'isAliasRegistered()->Alias not found: <', alias, ">");
         return false;
       } else {
-        console.log(`[${getFormattedTimestamp()}] Alias found: ${alias}`);
+        console.log(`[${getFormattedTimestamp()}]`,'isAliasRegistered()->Alias found: <', alias, ">");
         return true;
       }
     } catch (error) {

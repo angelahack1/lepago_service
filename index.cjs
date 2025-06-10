@@ -93,9 +93,9 @@ async function startApp() {
             extractedPublicKey = public_key;
           }
 
+          console.log(`[${getFormattedTimestamp()}]`,'Extracted public key: ', extractedPublicKey);
           login_name = extractedAlias;
           public_key = extractedPublicKey;
-            
           console.log(`[${getFormattedTimestamp()}]`, "login_name: ", login_name, ", checking availability...");
           const isUserAliasRegistered = await dbService.isAliasRegistered(login_name);
           if (isUserAliasRegistered) {

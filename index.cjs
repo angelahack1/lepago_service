@@ -61,7 +61,28 @@ async function startApp() {
           console.log('Getting in...');
           let login_name = args.login_name;
           let public_key = args.pubkey;
-      
+
+          let extractedAlias = null;
+          if(login_name.indexOf('$value') !== -1) {
+            console.log(`[${getFormattedTimestamp()}]`,'isAliasRegistered()->Alias contains $value');
+            const match = login_name.match(/\'$value\':\s*\'([^\']+)\'/);
+            extractedAlias = match ? match[1] : null;
+          } else {
+            extractedAlias = login_name;
+          }
+          
+          let extractedPublicKey = null;
+          if(public_key.indexOf('$value') !== -1) {
+            console.log(`[${getFormattedTimestamp()}]`,'isAliasRegistered()->Public Key contains $value');
+            const match = public_key.match(/\'$value\':\s*\'([^\']+)\'/);
+            extractedPublicKey = match ? match[1] : null;
+          } else {
+            extractedPublicKey = public_key;
+          }
+
+          login_name = extractedAlias;
+          public_key = extractedPublicKey;
+            
           console.log(`[${getFormattedTimestamp()}]`, "login_name: ", login_name, ", checking availability...");
           const isUserAliasRegistered = await dbService.isAliasRegistered(login_name);
           if (isUserAliasRegistered) {

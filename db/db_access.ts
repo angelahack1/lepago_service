@@ -65,6 +65,7 @@ export class DBService {
   public async isAliasRegistered(alias: string): Promise<boolean> {
     console.log(`[${getFormattedTimestamp()}]`,'isAliasRegistered()...');
     console.log(`[${getFormattedTimestamp()}]`,'isAliasRegistered()->Alias: <', alias, ">");
+    
     try {
       const collection: Collection<Usuario> = this.db.collection(this.collectionNameUsuario);
       const result = await collection.findOne({ alias: alias });

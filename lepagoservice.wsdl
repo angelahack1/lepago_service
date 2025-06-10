@@ -1,5 +1,6 @@
-<definitions name="LepagoService"
-  targetNamespace="http://www.lepagoservice.com/lepagoservice/"
+<definitions 
+  name="LepagoService"
+  targetNamespace="http://www.lepagoservice.com/lepagoservice"
   xmlns:tns="http://www.lepagoservice.com/lepagoservice"
   xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
@@ -76,7 +77,7 @@
       <soap:operation soapAction="http://www.lepagoservice.com/lepagoservice#loginReg"/>
       <input>
         <soap:body use="literal"/>
-        <soap:body use="literal"/>
+		<soap:body use="literal"/>
       </input>
       <output>
         <soap:body use="literal"/>
@@ -93,7 +94,7 @@
       </input>
       <output>
         <soap:body use="literal"/>
-        <soap:body use="literal"/>
+		<soap:body use="literal"/>
       </output>
     </operation>
     <operation name="challengeResp">
@@ -103,7 +104,6 @@
         <soap:body use="literal"/>
       </input>
       <output>
-        <soap:body use="literal"/>
         <soap:body use="literal"/>
       </output>
     </operation>
@@ -134,4 +134,4 @@
       <soap:address location="http://192.168.1.7:32000/lepagoservice"/>
     </port>
   </service>
-</definitions>
+</definitions> 

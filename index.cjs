@@ -61,11 +61,12 @@ async function startApp() {
           console.log('Getting in...');
           let login_name = args.login_name;
           let public_key = args.pubkey;
-          var cleanedString = login_name.replace(/\r?\n|\r/g, "");
+          console.log("About to clean the strings...");
+          var cleanedString = login_name.replace(/\r|\n/g, "");
           login_name = cleanedString;
-          cleanedString = public_key.replace(/\r?\n|\r/g, "");
+          cleanedString = public_key.replace(/\r|\n/g, "");
           public_key = cleanedString;
-
+          console.log("...Strings cleaned");
           console.log(`[${getFormattedTimestamp()}]`,'login_name: ', login_name);
           console.log(`[${getFormattedTimestamp()}]`,'public_key: ', public_key);
           

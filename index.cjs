@@ -62,20 +62,29 @@ async function startApp() {
           let login_name = args.login_name;
           let public_key = args.pubkey;
 
-          let extractedAlias = null;
+          console.log(`[${getFormattedTimestamp()}]`,'login_name: ', login_name);
+          console.log(`[${getFormattedTimestamp()}]`,'public_key: ', public_key);
+          
+          let extractedAlias = '';
           if(login_name.indexOf('$value') !== -1) {
             console.log(`[${getFormattedTimestamp()}]`,'isAliasRegistered()->Alias contains $value');
-            const match = login_name.match(/\'$value\':\s*\'([^\']+)\'/);
-            extractedAlias = match ? match[1] : null;
+            const valueIndex = login_name.indexOf("'$value': '") + "'$value': '".length;
+            const endIndex = login_name.indexOf("'", valueIndex);
+            const result = login_name.substring(valueIndex, endIndex);
+            extractedAlias = result;
           } else {
             extractedAlias = login_name;
           }
           
-          let extractedPublicKey = null;
+          console.log(`[${getFormattedTimestamp()}]`,'Extracted alias: ', extractedAlias);
+
+          let extractedPublicKey = '';
           if(public_key.indexOf('$value') !== -1) {
             console.log(`[${getFormattedTimestamp()}]`,'isAliasRegistered()->Public Key contains $value');
-            const match = public_key.match(/\'$value\':\s*\'([^\']+)\'/);
-            extractedPublicKey = match ? match[1] : null;
+            const valueIndex = public_key.indexOf("'$value': '") + "'$value': '".length;
+            const endIndex = public_key.indexOf("'", valueIndex);
+            const result = public_key.substring(valueIndex, endIndex);
+            extractedPublicKey = result;
           } else {
             extractedPublicKey = public_key;
           }

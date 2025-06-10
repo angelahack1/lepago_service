@@ -59,6 +59,11 @@ async function startApp() {
             return { status: "ERROR Failed to connect to DB", idc: "", ciphertext: "", challenge: "" };
           }
           console.log('Getting in...');
+
+
+          //TODO ALM: Check how to use the correct soap specification...
+
+          
           let login_name = args.login_name.$value;
           let public_key = args.pubkey.$value;
           console.log("About to clean the strings, login_name: <", login_name, "> public_key: <", public_key+">");

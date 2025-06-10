@@ -1,12 +1,12 @@
 <definitions name="LepagoService"
-  targetNamespace="http://www.example.org/lepagoservice"
-  xmlns:tns="http://www.example.org/lepagoservice"
+  targetNamespace="http://www.lepagoservice.com/lepagoservice/"
+  xmlns:tns="http://www.lepagoservice.com/lepagoservice"
   xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
   xmlns="http://schemas.xmlsoap.org/wsdl/">
   <message name="loginReg">
     <part name="login_name" type="xsd:string"/>
-    <part name="pubkey" type="xsd:string"/>
+    <part name="public_key" type="xsd:string"/>
   </message>
     <message name="loginRegResp">
     <part name="status" type="xsd:string"/>
@@ -15,10 +15,11 @@
     <part name="challenge" type="xsd:string"/>
   </message>
   <message name="loginReq">
-    <part name="login_name" type="xsd:string"/>
     <part name="idc" type="xsd:string"/>
+    <part name="login_name" type="xsd:string"/>
   </message>
   <message name="loginReqResp">
+    <part name="status" type="xsd:string"/>
     <part name="challenge" type="xsd:string"/>
   </message>
   <message name="train">
@@ -72,9 +73,10 @@
   <binding name="LepagoBinding" type="tns:LepagoPortType">
     <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
     <operation name="loginReg">
-      <soap:operation soapAction="http://www.example.org/lepagoservice#loginReg"/>
+      <soap:operation soapAction="http://www.lepagoservice.com/lepagoservice#loginReg"/>
       <input>
-        <soap:body use="literal" namespace="http://www.example.org/lepagoservice"/>
+        <soap:body use="literal"/>
+        <soap:body use="literal"/>
       </input>
       <output>
         <soap:body use="literal"/>
@@ -84,27 +86,29 @@
       </output>
     </operation>
     <operation name="loginReq">
-      <soap:operation soapAction="http://www.example.org/lepagoservice#loginReq"/>
+      <soap:operation soapAction="http://www.lepagoservice.com/lepagoservice#loginReq"/>
       <input>
         <soap:body use="literal"/>
         <soap:body use="literal"/>
       </input>
       <output>
+        <soap:body use="literal"/>
         <soap:body use="literal"/>
       </output>
     </operation>
     <operation name="challengeResp">
-      <soap:operation soapAction="http://www.example.org/lepagoservice#challengeResp"/>
+      <soap:operation soapAction="http://www.lepagoservice.com/lepagoservice#challengeResp"/>
       <input>
         <soap:body use="literal"/>
         <soap:body use="literal"/>
       </input>
       <output>
         <soap:body use="literal"/>
+        <soap:body use="literal"/>
       </output>
     </operation>
     <operation name="train">
-      <soap:operation soapAction="http://www.example.org/lepagoservice#train"/>
+      <soap:operation soapAction="http://www.lepagoservice.com/lepagoservice#train"/>
       <input>
         <soap:body use="literal"/>
         <soap:body use="literal"/>
@@ -114,7 +118,7 @@
       </output>
     </operation>
     <operation name="imAlive">
-      <soap:operation soapAction="http://www.example.org/lepagoservice#imAlive"/>
+      <soap:operation soapAction="http://www.lepagoservice.com/lepagoservice#imAlive"/>
       <input>
         <soap:body use="literal"/>
         <soap:body use="literal"/>
@@ -127,7 +131,7 @@
   </binding>
   <service name="LepagoService">
     <port name="LepagoPort" binding="tns:LepagoBinding">
-      <soap:address location="http://localhost:30000/lepagoservice"/>
+      <soap:address location="http://192.168.1.7:32000/lepagoservice"/>
     </port>
   </service>
-</definitions> 
+</definitions>

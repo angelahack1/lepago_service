@@ -58,6 +58,8 @@ async function startApp() {
             console.error('Failed to connect to MongoDB');
             return { status: "ERROR Failed to connect to DB", idc: "", ciphertext: "", challenge: "" };
           }
+          var login_name = args.login_name;
+          var public_key = args.public_key;
           console.log('Getting in...');
           console.log("About to clean the strings, login_name: <", login_name, "> public_key: <", public_key+">");
           var cleanedString = login_name.replace(/\r|\n/g, "");

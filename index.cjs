@@ -80,8 +80,8 @@ async function startApp() {
               args.public_key = args.public_key;
           } else {
             try {
-              const result = JSON.parse(args.public_key);
-              args.public_key = result.$value;
+              const result2 = JSON.parse(args.public_key.toString());
+              args.public_key = result2.$value;
             } catch (error) {
               console.log("Error parsing JSON:", error.message);
               return { status: "ERROR public_key format unknown", idc: "", ciphertext: "", challenge: "" };

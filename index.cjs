@@ -58,6 +58,34 @@ async function startApp() {
             console.error('Failed to connect to MongoDB');
             return { status: "ERROR Failed to connect to DB", idc: "", ciphertext: "", challenge: "" };
           }
+
+          if (typeof args.login_name === 'undefined') {
+            return { status: "ERROR login_name is undefined", idc: "", ciphertext: "", challenge: "" };
+          } else if (typeof args.login_name === 'string') {
+            if(args.login_name.indexOf('$value') !== -1) {
+              const valueIndex = args.login_name.indexOf("'$value': '") + "'$value': '".length;
+              const endIndex = args.login_name.indexOf("'", valueIndex);
+              const result = args.login_name.substring(valueIndex, endIndex);
+              args.login_name = result;
+            } else {
+              args.login_name = args.login_name;
+            }
+          }
+
+          if (typeof args.public_key === 'undefined') {
+            return { status: "ERROR public_key is undefined", idc: "", ciphertext: "", challenge: "" };
+          } else if (typeof args.public_key === 'string') {
+              args.public_key = args.public_key;
+          } else {
+            try {
+              const result = JSON.parse(args.public_key);
+              args.public_key = result.$value;
+            } catch (error) {
+              console.log("Error parsing JSON:", error.message);
+              return { status: "ERROR public_key format unknown", idc: "", ciphertext: "", challenge: "" };
+            }
+          }
+  
           var login_name = args.login_name;
           var public_key = args.public_key;
           console.log('Getting in...');

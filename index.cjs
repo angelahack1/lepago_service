@@ -77,9 +77,11 @@ async function startApp() {
             console.log("ERROR public_key is undefined");
             return { status: "ERROR public_key is undefined", idc: "", ciphertext: "", challenge: "" };
           } else if (typeof args.public_key === 'string') {
+              console.log("public_key is a string");
               args.public_key = args.public_key;
           } else {
             try {
+              console.log("public_key is an object");
               const result2 = JSON.parse(args.public_key.toString());
               args.public_key = result2.$value;
             } catch (error) {
@@ -87,7 +89,7 @@ async function startApp() {
               return { status: "ERROR public_key format unknown", idc: "", ciphertext: "", challenge: "" };
             }
           }
-  
+
           var login_name = args.login_name;
           var public_key = args.public_key;
           console.log('Getting in...');
@@ -145,7 +147,8 @@ async function startApp() {
           console.log(`[${getFormattedTimestamp()}]`, 'challenge: ', challengeR);
           console.log('<<<<<<<<<<<<<<loginReg', { status: "OK", idc: idcR, ciphertext: `${cipherTextR}`, challenge: `${challengeR}` });
           await dbService.close();
-          return { status: "OK", idc: idcR, ciphertext: `${cipherTextR}`, challenge: `${challengeR}` };
+          var attributesP = "attributes: { id: 'o0', 'c:root': '1' }";
+          return { attributes: attributesP, status: "OK", idc: idcR, ciphertext: `${cipherTextR}`, challenge: `${challengeR}` };
         },
         loginReq: async function(args) {
           console.log('>>>>>>>>>>>>>>>loginReq', args);

@@ -60,6 +60,7 @@ async function startApp() {
           }
 
           if (typeof args.login_name === 'undefined') {
+            console.log("ERROR login_name is undefined");
             return { status: "ERROR login_name is undefined", idc: "", ciphertext: "", challenge: "" };
           } else if (typeof args.login_name === 'string') {
             if(args.login_name.indexOf('$value') !== -1) {
@@ -73,6 +74,7 @@ async function startApp() {
           }
 
           if (typeof args.public_key === 'undefined') {
+            console.log("ERROR public_key is undefined");
             return { status: "ERROR public_key is undefined", idc: "", ciphertext: "", challenge: "" };
           } else if (typeof args.public_key === 'string') {
               args.public_key = args.public_key;

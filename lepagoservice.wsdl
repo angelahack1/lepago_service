@@ -71,6 +71,7 @@
       <output message="tns:imAliveResp"/>
     </operation>
   </portType>
+  
   <binding name="LepagoBinding" type="tns:LepagoPortType">
     <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
     <operation name="loginReg">

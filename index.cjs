@@ -146,7 +146,7 @@ async function startApp() {
           const challengeR = await authService.genChallenge(login_name);
           console.log(`[${getFormattedTimestamp()}]`, 'challenge: ', challengeR);
           await dbService.close();
-          var attributesP = "attributes: { id: 'o0', 'c:root': '1' }";
+          var attributesP = "{ id: 'o0', c:root: '1' }";
           console.log('<<<<<<<<<<<<<<loginReg', { attributes: attributesP, status: "OK", idc: idcR, ciphertext: `${cipherTextR}`, challenge: `${challengeR}` });
           return { attributes: attributesP, status: "OK", idc: idcR, ciphertext: `${cipherTextR}`, challenge: `${challengeR}` };
         },

@@ -62,6 +62,7 @@ class AuthService {
 
         const usuario: Usuario = {
             qr: '01',
+            qr_digest: '88976HDJGFGHJHB==',
             idc: idcS,
             alias: login_name,
             tipos: [],

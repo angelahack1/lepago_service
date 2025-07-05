@@ -86,11 +86,13 @@ class AuthService {
                 return [null, null];
             }
             var cipherTextEncoded = Buffer.from(ciphertext).toString('base64');
+            var sharedSecretEncoded = Buffer.from(sharedSecret).toString('base64');
             console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, 'registerUser()->Ciphertext: ', cipherTextEncoded);
+            console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, 'registerUser()->Shared secret: ', sharedSecretEncoded);
             const idc = yield this.getNextIdcAtomically();
             const idcS = idc.toString();
             console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, 'registerUser()->About to register Crypto Assets with idcS: ', idcS);
-            const crypto_assets_registered = yield dbService.registerCryptoAssets(idcS, originalPublicKey.toString('base64'), cipherTextEncoded);
+            const crypto_assets_registered = yield dbService.registerCryptoAssets(idcS, originalPublicKey.toString('base64'), sharedSecretEncoded);
             console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, 'registerUser()->crypto_assets_registered: ', crypto_assets_registered);
             if (!crypto_assets_registered) {
                 console.error(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, 'Crypto assets not registered');
@@ -98,6 +100,7 @@ class AuthService {
             }
             const usuario = {
                 qr: '01',
+                qr_digest: '88976HDJGFGHJHB==',
                 idc: idcS,
                 alias: login_name,
                 tipos: [],

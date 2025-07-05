@@ -69,15 +69,17 @@ class DBService {
     }
     isAliasRegistered(alias) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, 'isAliasRegistered()...');
+            console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, 'isAliasRegistered()->Alias: <', alias, ">");
             try {
                 const collection = this.db.collection(this.collectionNameUsuario);
                 const result = yield collection.findOne({ alias: alias });
                 if (result === null) {
-                    console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}] Alias not found: ${alias}`);
+                    console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, 'isAliasRegistered()->Alias not found: <', alias, ">");
                     return false;
                 }
                 else {
-                    console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}] Alias found: ${alias}`);
+                    console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, 'isAliasRegistered()->Alias found: <', alias, ">");
                     return true;
                 }
             }
@@ -157,12 +159,12 @@ class DBService {
             console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, '...getCatalogoTiposUsuario() success');
         });
     }
-    registerCryptoAssets(idcP, publicKey, sharedSecret) {
+    registerCryptoAssets(idcP, publicKey, sharedSecretEncoded) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log(`[${(0, timestamp_1.getFormattedTimestamp)()}]`, 'registerCryptoAssets()...');
             try {
                 const collection = this.db.collection(this.collectionNameCryptoArtifacts);
-                yield collection.insertOne({ idc: idcP, public_key: publicKey, shared_secret: sharedSecret });
+                yield collection.insertOne({ idc: idcP, public_key: publicKey, shared_secret: sharedSecretEncoded });
             }
             catch (error) {
                 console.error(`[${(0, timestamp_1.getFormattedTimestamp)()}] Error registering crypto assets:`, error);

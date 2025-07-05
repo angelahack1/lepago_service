@@ -2,6 +2,7 @@ import { Timestamp } from 'mongodb';
 
 export interface Usuario {
     qr: string;
+    qr_digest: string;
     idc: string;
     alias: string;
     tipos: Array<string>;

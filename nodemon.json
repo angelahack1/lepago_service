@@ -2,5 +2,6 @@
     "watch": ["index.cjs", "pow/", "ckyber/", "db/", "service_handler/", "timestamp/", "TradinCore/"],
     "ext": "js,json,cjs, ts, tsx",
     "ignore": ["node_modules/", "logs/"],
-    "exec": "node --inspect index.cjs"
+    "exec": "node --inspect index.cjs",
+    "delay": "2500"
   }

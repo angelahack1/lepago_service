@@ -13,52 +13,28 @@ class AuthService {
     private static idc_counter_sarray_view: Int32Array = new Int32Array(AuthService.buffer);
 
     constructor() {
-      console.log(`[${getFormattedTimestamp()}]`,'Autservice::constructor()...');
-      console.log(`[${getFormattedTimestamp()}]`,'kem: ', AuthService.kem);
-      console.log(`[${getFormattedTimestamp()}]`,'challengeHashes: ', AuthService.challengeHashes);
-      console.log(`[${getFormattedTimestamp()}]`,'buffer: ', AuthService.buffer);
-      console.log(`[${getFormattedTimestamp()}]`,'idc_counter_sarray_view: ', AuthService.idc_counter_sarray_view);
-      console.log(`[${getFormattedTimestamp()}]`,'...Autservice::constructor()');
     }
 
     private async getNextIdcAtomically(): Promise<string> {
-      console.log(`[${getFormattedTimestamp()}]`,'getNextIdcAtomically()...');
         const previousCounterValue = Atomics.add(AuthService.idc_counter_sarray_view, 0, 1);
         const idc = await this.getMillisecondsSince1900() + previousCounterValue;
-        console.log(`[${getFormattedTimestamp()}]`,'...getNextIdcAtomically() idc: ', idc);
         return idc.toString();
     }
 
     public async registerUser(login_name: string, publicKey: any): Promise<[string | null, string | null]> {
-      console.log(`[${getFormattedTimestamp()}]`,'registerUser()...');
         const dbService = new DBService();
-        const db = await dbService.connect();
-        if(!db) {
-          throw new Error('Failed to connect to MongoDB');
-        } else {
-          console.log(`[${getFormattedTimestamp()}]`,'registerUser()->Connected to MongoDB');
-        }
+        await dbService.connect();
         Atomics.store(AuthService.idc_counter_sarray_view, 0, 0);
-        console.log(`[${getFormattedTimestamp()}]`,'registerUser()->Registering user: ',login_name);
         const originalPublicKey = Buffer.from(publicKey, 'base64');
         const [ciphertext, sharedSecret] = await AuthService.kem.encap(originalPublicKey);
         if(!ciphertext || !sharedSecret) {
-            console.error(`[${getFormattedTimestamp()}]`,'Encapsulation failed for that public key!');
-            return [ null, null ];
+            throw new Error('Encapsulation failed for that public key!');
         }
         var cipherTextEncoded = Buffer.from(ciphertext).toString('base64');
         var sharedSecretEncoded = Buffer.from(sharedSecret).toString('base64');
-        console.log(`[${getFormattedTimestamp()}]`,'registerUser()->Ciphertext: ',cipherTextEncoded);
-        console.log(`[${getFormattedTimestamp()}]`,'registerUser()->Shared secret: ',sharedSecretEncoded);
         const idc = await this.getNextIdcAtomically();
         const idcS = idc.toString();
-        console.log(`[${getFormattedTimestamp()}]`,'registerUser()->About to register Crypto Assets with idcS: ', idcS);
-        const crypto_assets_registered = await dbService.registerCryptoAssets(idcS, originalPublicKey.toString('base64'), sharedSecretEncoded);
-        console.log(`[${getFormattedTimestamp()}]`,'registerUser()->crypto_assets_registered: ', crypto_assets_registered);
-        if(!crypto_assets_registered) {
-          console.error(`[${getFormattedTimestamp()}]`,'Crypto assets not registered');
-          return [ null, null ];
-        }
+        await dbService.registerCryptoAssets(idcS, originalPublicKey.toString('base64'), sharedSecretEncoded);
 
         const usuario: Usuario = {
             qr: '01',
@@ -79,43 +55,31 @@ class AuthService {
             fecha_cambio: new Timestamp({ t: Math.floor(Date.now() / 1000), i: 2 })
         };
         
-        const usuarioRegistered = await dbService.registerUsuario(usuario);
-        if(!usuarioRegistered) {
-          console.error(`[${getFormattedTimestamp()}]`,'User not registered');
-          return [ null, null ];
-        }
-        console.log(`[${getFormattedTimestamp()}]`,'registerUser()->User Registered successfully');
+        await dbService.registerUsuario(usuario);
         return [ cipherTextEncoded, idcS ];
     }
 
-    public async genChallenge(login_name: string) {
-      console.log(`[${getFormattedTimestamp()}]`,'Generating challenge for: ',login_name);
+    public genChallenge(login_name: string): string {
       const randomBytes = nodeCrypto.randomBytes(16).toString('hex');
-      console.log(`[${getFormattedTimestamp()}]`,'Random bytes: ',randomBytes);
       AuthService.challengeHashes.set(login_name, randomBytes);
       return randomBytes;
     }
 
-    public async getChallenge(login_name: string) {
-      console.log(`[${getFormattedTimestamp()}]`,'Getting challenge hash for: ',login_name);
+    public getChallenge(login_name: string): string {
       if(!AuthService.challengeHashes.has(login_name)) {
         throw new Error(`User ${login_name} not found for challenge hash`);
       }
-      return AuthService.challengeHashes.get(login_name);
+      return AuthService.challengeHashes.get(login_name)!;
     }
 
-    public async checkChallengeHash(login_name: string, hashReceived: string) {
-      console.log(`[${getFormattedTimestamp()}]`,'Checking challenge hash for: ',login_name);
-      const challenge = await this.getChallenge(login_name);
+    public checkChallengeHash(login_name: string, hashReceived: string): boolean {
+      const challenge = this.getChallenge(login_name);
       const pow = new ProofOfWork(challenge, 4);
-      const { blockData, nonce, hash } = pow.mine();
-      console.log(`[${getFormattedTimestamp()}]`,'Hash: ',hash);
-      console.log(`[${getFormattedTimestamp()}]`,'Hash received: ',hashReceived);
-      console.log(`[${getFormattedTimestamp()}]`,'Hash match: ',hash === hashReceived);
+      const { hash } = pow.mine();
       return hash === hashReceived;
     }
 
-    private async getMillisecondsSince1900(): Promise<string> {
+    private getMillisecondsSince1900(): string {
       const millisecondsSince1970Epoch = new Date().getTime();
       const epoch1900Offset = new Date('1900-01-01T00:00:00Z').getTime();
       return (millisecondsSince1970Epoch - epoch1900Offset).toString();

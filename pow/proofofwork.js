@@ -52,12 +52,9 @@ class ProofOfWork {
     mine() {
         let nonce = 0;
         let hash;
-        console.log(`Mining block with difficulty ${this.difficulty}...`);
         while (true) {
             hash = this.calculateHash(nonce);
             if (hash.startsWith(this.target)) {
-                console.log(`Block mined! Nonce: ${nonce}`);
-                console.log(`Hash: ${hash}`);
                 break;
             }
             nonce++;

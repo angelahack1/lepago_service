@@ -10,34 +10,72 @@ const AuthService = require('./ckyber/authservice').default;
 const crypto = require('crypto');
 
 
-const PORT = 30000;
+const PORT = 30010;
 const app = express();
 app.use(bodyParser.raw({ type: () => true, limit: '5mb' }));
 
+const STATUS = {
+    OK: "OK",
+    ERROR_DB_CONNECT: "ERROR Failed to connect to DB",
+    ERROR_LOGIN_NAME_UNDEFINED: "ERROR login_name is undefined",
+    ERROR_PUBLIC_KEY_UNDEFINED: "ERROR public_key is undefined",
+    ALREADY_REGISTERED: "ALREADY_REGISTERED according to database",
+    ERROR_AUTH_REGISTER: "ERROR Authservice registering User",
+    IDC_NOT_FOUND: "IDC_NOT_FOUND",
+    LOGIN_NAME_MISMATCH: "LOGIN_NAME_MISMATCH",
+    SHARED_SECRET_NOT_FOUND: "SHARED_SECRET_NOT_FOUND",
+    HASH_MISMATCH: "HASH_MISMATCH",
+};
+
+function extractValue(arg) {
+  if (arg === undefined || arg === null) return null;
+
+  let value = arg;
+  // Handle objects from SOAP parsing like { '$value': '...' }
+  if (typeof value === 'object' && value.$value) {
+    value = value.$value;
+  }
+
+  // Handle stringified JSON from clients
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      if (parsed && parsed.$value) {
+        value = parsed.$value;
+      }
+    } catch (e) {
+      // Not a JSON string, continue
+    }
+  }
+  
+  // Handle the weird string format `"{ '$value': '...' }"`
+  if (typeof value === 'string' && value.includes('$value')) {
+    const match = value.match(/'\$value':\s*'([^']*)'/);
+    if (match && match[1]) {
+      value = match[1];
+    }
+  }
+
+  // Clean and return
+  if (typeof value === 'string') {
+    return value.replace(/\r|\n/g, "").trim();
+  }
+
+  return value;
+}
+
 function decryptWithSharedSecret(encryptedData, sharedSecret) {
-  console.log("decryptWithSharedSecret() -> encryptedData: ", encryptedData, " sharedSecret: ", sharedSecret);
-  // Convert base64 string back to hex
-  const encryptedDataHex = Buffer.from(encryptedData, 'base64').toString('hex');
-  console.log("decryptWithSharedSecret() -> encryptedDataHex: ", encryptedDataHex);
-  const encryptedBuffer = Buffer.from(encryptedData, 'base64');
-  // Extract IV (first 16 bytes), encrypted data, and auth tag
-  const iv = encryptedBuffer.slice(0, 16);
-  const authTag = encryptedBuffer.slice(-16);
-  const encryptedContent = encryptedBuffer.slice(16, -16);
-  console.log("decryptWithSharedSecret() -> iv: ", iv);
-  console.log("decryptWithSharedSecret() -> authTag: ", authTag);
-  console.log("decryptWithSharedSecret() -> encryptedContent: ", encryptedContent);
-  // Create decipher using AES-256-GCM
-  const decipher = crypto.createDecipheriv('aes-256-gcm', sharedSecret.slice(0, 32), iv);
-  console.log("decryptWithSharedSecret() -> decipher: ", decipher);
-  console.log("decryptWithSharedSecret() -> decipher.setAuthTag(authTag): ", decipher.setAuthTag(authTag));
-  // Decrypt the data
   try {
+    const encryptedBuffer = Buffer.from(encryptedData, 'base64');
+    const iv = encryptedBuffer.slice(0, 16);
+    const authTag = encryptedBuffer.slice(-16);
+    const encryptedContent = encryptedBuffer.slice(16, -16);
+    const decipher = crypto.createDecipheriv('aes-256-gcm', sharedSecret.slice(0, 32), iv);
+    decipher.setAuthTag(authTag);
     const decrypted = Buffer.concat([
         decipher.update(encryptedContent),
         decipher.final()
     ]);
-    console.log('decryptWithSharedSecret() -> Decrypted data:', decrypted.toString('hex'));
     return decrypted.toString('hex');
   } catch (error) {
     console.error('decryptWithSharedSecret() -> Error:', error);
@@ -56,166 +94,114 @@ async function startApp() {
           const db = await dbService.connect();
           if (!db) {
             console.error('Failed to connect to MongoDB');
-            return { status: "ERROR Failed to connect to DB", idc: "", ciphertext: "", challenge: "" };
+            return { status: STATUS.ERROR_DB_CONNECT, idc: "", ciphertext: "", challenge: "" };
           }
 
-          if (typeof args.login_name === 'undefined') {
-            console.log("ERROR login_name is undefined");
-            return { status: "ERROR login_name is undefined", idc: "", ciphertext: "", challenge: "" };
-          } else if (typeof args.login_name === 'string') {
-            if(args.login_name.indexOf('$value') !== -1) {
-              const valueIndex = args.login_name.indexOf("'$value': '") + "'$value': '".length;
-              const endIndex = args.login_name.indexOf("'", valueIndex);
-              const result = args.login_name.substring(valueIndex, endIndex);
-              args.login_name = result;
-            } else {
-              args.login_name = args.login_name;
-            }
+          const login_name = extractValue(args.login_name);
+          const public_key = extractValue(args.public_key);
+
+          if (!login_name) {
+            return { status: STATUS.ERROR_LOGIN_NAME_UNDEFINED, idc: "", ciphertext: "", challenge: "" };
+          }
+          if (!public_key) {
+            return { status: STATUS.ERROR_PUBLIC_KEY_UNDEFINED, idc: "", ciphertext: "", challenge: "" };
           }
 
-          if (typeof args.public_key === 'undefined') {
-            console.log("ERROR public_key is undefined");
-            return { status: "ERROR public_key is undefined", idc: "", ciphertext: "", challenge: "" };
-          } else if (typeof args.public_key === 'string') {
-              console.log("public_key is a string");
-              args.public_key = args.public_key;
-          } else {
-            try {
-              console.log("public_key is an object");
-              const result2 = JSON.parse(args.public_key.toString());
-              args.public_key = result2.$value;
-            } catch (error) {
-              console.log("Error parsing JSON:", error.message);
-              return { status: "ERROR public_key format unknown", idc: "", ciphertext: "", challenge: "" };
-            }
-          }
-
-          var login_name = args.login_name;
-          var public_key = args.public_key;
-          console.log('Getting in...');
-          console.log("About to clean the strings, login_name: <", login_name, "> public_key: <", public_key+">");
-          var cleanedString = login_name.replace(/\r|\n/g, "");
-          login_name = cleanedString;
-          cleanedString = public_key.replace(/\r|\n/g, "");
-          public_key = cleanedString;
-          console.log("...Strings cleaned");
           console.log(`[${getFormattedTimestamp()}]`,'login_name: ', login_name);
           console.log(`[${getFormattedTimestamp()}]`,'public_key: ', public_key);
           
-          let extractedAlias = '';
-          if(login_name.indexOf('$value') !== -1) {
-            console.log(`[${getFormattedTimestamp()}]`,'isAliasRegistered()->Alias contains $value');
-            const valueIndex = login_name.indexOf("'$value': '") + "'$value': '".length;
-            const endIndex = login_name.indexOf("'", valueIndex);
-            const result = login_name.substring(valueIndex, endIndex);
-            extractedAlias = result;
-          } else {
-            extractedAlias = login_name;
-          }
-          
-          console.log(`[${getFormattedTimestamp()}]`,'Extracted alias: ', extractedAlias);
-
-          let extractedPublicKey = '';
-          if(public_key.indexOf('$value') !== -1) {
-            console.log(`[${getFormattedTimestamp()}]`,'isAliasRegistered()->Public Key contains $value');
-            const valueIndex = public_key.indexOf("'$value': '") + "'$value': '".length;
-            const endIndex = public_key.indexOf("'", valueIndex);
-            const result = public_key.substring(valueIndex, endIndex);
-            extractedPublicKey = result;
-          } else {
-            extractedPublicKey = public_key;
-          }
-
-          console.log(`[${getFormattedTimestamp()}]`,'Extracted public key: ', extractedPublicKey);
-          login_name = extractedAlias;
-          public_key = extractedPublicKey;
-          console.log(`[${getFormattedTimestamp()}]`, "login_name: ", login_name, ", checking availability...");
           const isUserAliasRegistered = await dbService.isAliasRegistered(login_name);
           if (isUserAliasRegistered) {
             console.log(`[${getFormattedTimestamp()}] loginReg->ALREADY_REGISTERED(${login_name})`);
-            return { status: "ALREADY_REGISTERED according to database", idc: "", ciphertext: "", challenge: "" };
+            return { status: STATUS.ALREADY_REGISTERED, idc: "", ciphertext: "", challenge: "" };
           }
-          console.log(`[${getFormattedTimestamp()}]`, "public_key on b64 to hex:", Buffer.from(public_key, 'base64').toString('hex'));
+          
           const authService = new AuthService();
           const [cipherTextR, idcR] = await authService.registerUser(login_name, public_key);
           if(!cipherTextR || !idcR) {
             console.error(`[${getFormattedTimestamp()}]`,'User not registered');
-            return { status: "ERROR Authservice registering User", idc: "", ciphertext: "", challenge: "" };
+            return { status: STATUS.ERROR_AUTH_REGISTER, idc: "", ciphertext: "", challenge: "" };
           }
+          
           console.log(`[${getFormattedTimestamp()}]`, 'Encapsulation successful');
           const challengeR = await authService.genChallenge(login_name);
           console.log(`[${getFormattedTimestamp()}]`, 'challenge: ', challengeR);
           await dbService.close();
-          console.log('<<<<<<<<<<<<<<loginReg', { status: "OK", idc: idcR, ciphertext: `${cipherTextR}`, challenge: `${challengeR}` });
-          return { status: "OK", idc: idcR, ciphertext: `${cipherTextR}`, challenge: `${challengeR}` };
+          
+          const response = { status: STATUS.OK, idc: idcR, ciphertext: `${cipherTextR}`, challenge: `${challengeR}` };
+          console.log('<<<<<<<<<<<<<<loginReg', response);
+          return response;
         },
         loginReq: async function(args) {
           console.log('>>>>>>>>>>>>>>>loginReq', args);
-          let idc = args.idc;
-          let login_nameR = args.login_name;
+          const idc = args.idc;
+          const login_nameR = args.login_name;
           const dbService = new DBService(process.env.MONGODB_URI);
           const db = await dbService.connect();
           if (!db) {
             console.error('Failed to connect to MongoDB');
-            return { status: "ERROR Failed to connect to DB", idc: "", ciphertext: "", challenge: "" };
-          } else {
-            console.log('Connected to MongoDB');
+            return { status: STATUS.ERROR_DB_CONNECT, idc: "", ciphertext: "", challenge: "" };
           }
+          
           const login_name = await dbService.getLoginNameFromIdc(idc);
           if (!login_name) {
-            console.log(`[${getFormattedTimestamp()}]`, 'loginReq->IDC_NOT_FOUND(' + idc + ')');
-            return { status: "IDC_NOT_FOUND", challenge: "" };
+            console.log(`[${getFormattedTimestamp()}]`, `loginReq->${STATUS.IDC_NOT_FOUND}(${idc})`);
+            return { status: STATUS.IDC_NOT_FOUND, challenge: "" };
           }
           if (login_nameR !== login_name) {
-            console.log(`[${getFormattedTimestamp()}]`, 'loginReq->LOGIN_NAME_MISMATCH(${login_nameR} !== ${login_name})');
-            return { status: "LOGIN_NAME_MISMATCH", challenge: "" };
+            console.log(`[${getFormattedTimestamp()}]`, `loginReq->${STATUS.LOGIN_NAME_MISMATCH}(${login_nameR} !== ${login_name})`);
+            return { status: STATUS.LOGIN_NAME_MISMATCH, challenge: "" };
           }
+          
           console.log(`[${getFormattedTimestamp()}]`, 'login_name: ', login_name);
           const authService = new AuthService();
           const challenge = await authService.genChallenge(login_name);
           console.log(`[${getFormattedTimestamp()}]`, '(LR) challenge: ', challenge);
-          console.log('<<<<<<<<<<<<<<loginReq', { status: "OK", challenge: `${challenge}` });
+          
           await dbService.close();
-          return { status: "OK", challenge: `${challenge}` };
+          const response = { status: STATUS.OK, challenge: `${challenge}` };
+          console.log('<<<<<<<<<<<<<<loginReq', response);
+          return response;
         },
         challengeResp: async function(args) {
           console.log('>>>>>>>>>>>>>>challengeResp', args);
-          let idc = args.idc;
-          let crypted_hash = args.crypted_hash;
-          const dbService = new DBService();
+          const idc = args.idc;
+          const crypted_hash = args.crypted_hash;
+          const dbService = new DBService(process.env.MONGODB_URI);
           const db = await dbService.connect();
           if (!db) {
             console.error('Failed to connect to MongoDB');
-            return { status: "ERROR Failed to connect to DB", challenge: "" };
+            return { status: STATUS.ERROR_DB_CONNECT, challenge: "" };
           }
-          const authService = new AuthService();
+          
           const login_name = await dbService.getLoginNameFromIdc(idc);
           if (!login_name) {
-            console.log(`[${getFormattedTimestamp()}]`, 'challengeResp->IDC_NOT_FOUND(' + idc + ')');
+            console.log(`[${getFormattedTimestamp()}]`, `challengeResp->${STATUS.IDC_NOT_FOUND}(${idc})`);
             await dbService.close();
-            return { status: "IDC_NOT_FOUND", challenge: "" };
+            return { status: STATUS.IDC_NOT_FOUND, challenge: "" };
           }
 
-          //get the sharedSecret from the database
           const sharedSecret = await dbService.getSharedSecretFromIdc(idc);
           if (!sharedSecret) {
-            console.log(`[${getFormattedTimestamp()}]`, 'challengeResp->SHARED_SECRET_NOT_FOUND(' + login_name + ')');
+            console.log(`[${getFormattedTimestamp()}]`, `challengeResp->${STATUS.SHARED_SECRET_NOT_FOUND}(${login_name})`);
             await dbService.close();
-            return { status: "SHARED_SECRET_NOT_FOUND", challenge: "" };
+            return { status: STATUS.SHARED_SECRET_NOT_FOUND, challenge: "" };
           }
 
           const decryptedHash = decryptWithSharedSecret(crypted_hash, sharedSecret);
           console.log('decryptWithSharedSecret() -> Decrypted hash:', decryptedHash);
 
+          const authService = new AuthService();
           const isChallengeHashValid = await authService.checkChallengeHash(login_name, decryptedHash);
           if (!isChallengeHashValid) {
-            console.log(`[${getFormattedTimestamp()}]`, 'challengeResp->HASH_MISMATCH(${challengeHash} !== ${hash})');
+            console.log(`[${getFormattedTimestamp()}]`, `challengeResp->${STATUS.HASH_MISMATCH}`);
             await dbService.close();
-            return { status: "HASH_MISMATCH", challenge: "" };
+            return { status: STATUS.HASH_MISMATCH, challenge: "" };
           }
-          console.log(`[${getFormattedTimestamp()}]`, 'challengeResp->OK(${idc}), hash(${hash})');
+          
+          console.log(`[${getFormattedTimestamp()}]`, `challengeResp->OK(${idc})`);
           await dbService.close();
-          return { status: "OK" };
+          return { status: STATUS.OK };
         }
       }
     }
@@ -226,7 +212,7 @@ async function startApp() {
   soap.listen(server, '/lepagoservice', service, wsdl);
 
   server.listen(PORT, () => {
-    console.log(`[${getFormattedTimestamp()}]`, 'SOAP service v 0.113.0 (2025-06-29 at 20:52 hrs.) is running on /lepagoservice...');
+    console.log(`[${getFormattedTimestamp()}]`, `SOAP service v 0.113.0 (2025-06-29 at 20:52 hrs.) is running on /lepagoservice...`);
   });
 }
 

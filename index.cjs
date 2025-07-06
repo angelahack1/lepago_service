@@ -10,7 +10,7 @@ const AuthService = require('./ckyber/authservice').default;
 const crypto = require('crypto');
 
 
-const PORT = 30010;
+const PORT = 30000;
 const app = express();
 app.use(bodyParser.raw({ type: () => true, limit: '5mb' }));
 

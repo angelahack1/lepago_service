@@ -172,7 +172,7 @@ async function startApp() {
     }
   };
 
-  const wsdlURL = 'http://localhost:30000/wsdl-rest'; // <-- TODO: REPLACE WITH YOUR WSDL URL
+  const wsdlURL = process.env.WSDL_URL;
   const { data: wsdl } = await axios.get(wsdlURL);
   const server = http.createServer(app);
   soap.listen(server, '/lepagoservice', service, wsdl);

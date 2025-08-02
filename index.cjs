@@ -178,7 +178,7 @@ async function startApp() {
   soap.listen(server, '/lepagoservice', service, wsdl);
 
   server.listen(PORT, () => {
-    console.log(`[${getFormattedTimestamp()}]`, `SOAP service v 0.113.0 (2025-06-29 at 20:52 hrs.) is running on /lepagoservice...`);
+    console.log(`[${getFormattedTimestamp()}]`, `SOAP service v 0.116.0 (2025-08-01 at 20:06 hrs.) is running on /lepagoservice...`);
   });
 }
 

@@ -3,7 +3,7 @@ const http = require('http');
 const soap = require('soap');
 const express = require('express');
 const bodyParser = require('body-parser');
-const fs = require('fs');
+const axios = require('axios');
 const { getFormattedTimestamp } = require('./timestamp/timestamp');
 const { DBService } = require('./db/db_access.js');
 const AuthService = require('./ckyber/authservice').default;
@@ -172,7 +172,8 @@ async function startApp() {
     }
   };
 
-  const wsdl = fs.readFileSync('./lepagoservice.wsdl', 'utf8');
+  const wsdlURL = 'http://localhost:30000/wsdl-rest'; // <-- TODO: REPLACE WITH YOUR WSDL URL
+  const { data: wsdl } = await axios.get(wsdlURL);
   const server = http.createServer(app);
   soap.listen(server, '/lepagoservice', service, wsdl);
 

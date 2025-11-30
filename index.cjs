@@ -15,16 +15,16 @@ const app = express();
 app.use(bodyParser.raw({ type: () => true, limit: '5mb' }));
 
 const STATUS = {
-    OK: "OK",
-    ERROR_DB_CONNECT: "ERROR Failed to connect to DB",
-    ERROR_LOGIN_NAME_UNDEFINED: "ERROR login_name is undefined",
-    ERROR_PUBLIC_KEY_UNDEFINED: "ERROR public_key is undefined",
-    ALREADY_REGISTERED: "ALREADY_REGISTERED according to database",
-    ERROR_AUTH_REGISTER: "ERROR Authservice registering User",
-    IDC_NOT_FOUND: "IDC_NOT_FOUND",
-    LOGIN_NAME_MISMATCH: "LOGIN_NAME_MISMATCH",
-    SHARED_SECRET_NOT_FOUND: "SHARED_SECRET_NOT_FOUND",
-    HASH_MISMATCH: "HASH_MISMATCH",
+  OK: "OK",
+  ERROR_DB_CONNECT: "ERROR Failed to connect to DB",
+  ERROR_LOGIN_NAME_UNDEFINED: "ERROR login_name is undefined",
+  ERROR_PUBLIC_KEY_UNDEFINED: "ERROR public_key is undefined",
+  ALREADY_REGISTERED: "ALREADY_REGISTERED according to database",
+  ERROR_AUTH_REGISTER: "ERROR Authservice registering User",
+  IDC_NOT_FOUND: "IDC_NOT_FOUND",
+  LOGIN_NAME_MISMATCH: "LOGIN_NAME_MISMATCH",
+  SHARED_SECRET_NOT_FOUND: "SHARED_SECRET_NOT_FOUND",
+  HASH_MISMATCH: "HASH_MISMATCH",
 };
 
 function extractValue(arg) {
@@ -47,7 +47,7 @@ function extractValue(arg) {
       // Not a JSON string, continue
     }
   }
-  
+
   // Handle the weird string format `"{ '$value': '...' }"`
   if (typeof value === 'string' && value.includes('$value')) {
     const match = value.match(/'\$value':\s*'([^']*)'/);
@@ -73,8 +73,8 @@ function decryptWithSharedSecret(encryptedData, sharedSecret) {
     const decipher = crypto.createDecipheriv('aes-256-gcm', sharedSecret.slice(0, 32), iv);
     decipher.setAuthTag(authTag);
     const decrypted = Buffer.concat([
-        decipher.update(encryptedContent),
-        decipher.final()
+      decipher.update(encryptedContent),
+      decipher.final()
     ]);
     return decrypted.toString('hex');
   } catch (error) {
@@ -88,7 +88,7 @@ async function startApp() {
   const service = {
     LepagoService: {
       LepagoPort: {
-        loginReg: async function(args) {
+        loginReg: async function (args) {
           const dbService = new DBService(process.env.MONGODB_URI);
           await dbService.connect();
 
@@ -101,29 +101,29 @@ async function startApp() {
           if (!public_key) {
             return { status: STATUS.ERROR_PUBLIC_KEY_UNDEFINED, idc: "", ciphertext: "", challenge: "" };
           }
-          
+
           const isUserAliasRegistered = await dbService.isAliasRegistered(login_name);
           if (isUserAliasRegistered) {
             return { status: STATUS.ALREADY_REGISTERED, idc: "", ciphertext: "", challenge: "" };
           }
-          
+
           const authService = new AuthService();
           const [cipherTextR, idcR] = await authService.registerUser(login_name, public_key);
-          if(!cipherTextR || !idcR) {
+          if (!cipherTextR || !idcR) {
             return { status: STATUS.ERROR_AUTH_REGISTER, idc: "", ciphertext: "", challenge: "" };
           }
-          
+
           const challengeR = await authService.genChallenge(login_name);
           await dbService.close();
-          
+
           return { status: STATUS.OK, idc: idcR, ciphertext: `${cipherTextR}`, challenge: `${challengeR}` };
         },
-        loginReq: async function(args) {
+        loginReq: async function (args) {
           const idc = args.idc;
           const login_nameR = args.login_name;
           const dbService = new DBService(process.env.MONGODB_URI);
           await dbService.connect();
-          
+
           const login_name = await dbService.getLoginNameFromIdc(idc);
           if (!login_name) {
             return { status: STATUS.IDC_NOT_FOUND, challenge: "" };
@@ -131,19 +131,19 @@ async function startApp() {
           if (login_nameR !== login_name) {
             return { status: STATUS.LOGIN_NAME_MISMATCH, challenge: "" };
           }
-          
+
           const authService = new AuthService();
           const challenge = await authService.genChallenge(login_name);
-          
+
           await dbService.close();
           return { status: STATUS.OK, challenge: `${challenge}` };
         },
-        challengeResp: async function(args) {
+        challengeResp: async function (args) {
           const idc = args.idc;
           const crypted_hash = args.crypted_hash;
           const dbService = new DBService(process.env.MONGODB_URI);
           await dbService.connect();
-          
+
           const login_name = await dbService.getLoginNameFromIdc(idc);
           if (!login_name) {
             await dbService.close();
@@ -164,7 +164,7 @@ async function startApp() {
             await dbService.close();
             return { status: STATUS.HASH_MISMATCH, challenge: "" };
           }
-          
+
           await dbService.close();
           return { status: STATUS.OK };
         }

@@ -19,7 +19,7 @@ pipeline {
         stage('Build Project') {
             steps {
                 echo '--- Building the project ---'
-                bat 'copy E:\\Developments\\lepago_service\\.env.local .env.local'
+                bat 'copy C:\\Developments\\lepago_service\\.env.local .env.local'
                 bat 'pause 5'
                 bat 'docker build -t lepagoservice:1.0 .'
             }

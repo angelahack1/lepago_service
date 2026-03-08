@@ -1,0 +1,10 @@
+dd6779bc4f8b4eed917da7833585b416b8673968e74c62a7e8d9ca413fbde365  node-v25.8.0-headers.tar.gz
+c83752605618b3efefc6c19bd10c9b710ead18ba70d9b036cd75a2adfbced5da  node-v25.8.0-headers.tar.xz
+23a2f3d22e224b895f98ac94ce7c1f37a71b70ba3a9a8f92af980067604af2ef  node-v25.8.0-linux-arm64-musl.tar.gz
+c50b3cd5239fa711d09d0695323bcbbda1c1261da09de06b422e8068f4540531  node-v25.8.0-linux-arm64-musl.tar.xz
+5c28204fc5a1d74ec814f4f110b7837b4e5017866064aeed0284155a6d962983  node-v25.8.0-linux-riscv64-pointer-compression.tar.gz
+ad0c592992595b720bc76a75a5db43091a595e97fbf2af5b0c677bb75cfce4dc  node-v25.8.0-linux-riscv64-pointer-compression.tar.xz
+b9151be926bf80f8aa1d65d4156ec457fe8ec234232fed013891ec9646edf49d  node-v25.8.0-linux-riscv64.tar.gz
+654bcdb0b5f0b072787f9ba1c6e3283639057644e66d0f98e4ec85f06de31f19  node-v25.8.0-linux-riscv64.tar.xz
+4984262499d01272987956256e44a95c68fadf182f58dc3e7e1566e655c1079f  node-v25.8.0-linux-x64-musl.tar.gz
+caa46f1f6463058f14f6be404bd5ec41ba33acd5a5fe936fe3b865e29063d75b  node-v25.8.0-linux-x64-musl.tar.xz

@@ -1,6 +1,6 @@
-FROM alpine:3.21
+FROM alpine:3.23
 
-ENV NODE_VERSION 23.11.0
+ENV NODE_VERSION 25.8.0
 
 ENV TZ="America/Mexico_City"
 
@@ -12,7 +12,7 @@ RUN addgroup -g 1000 node \
         curl \
     && ARCH= OPENSSL_ARCH='linux*' && alpineArch="$(apk --print-arch)" \
       && case "${alpineArch##*-}" in \
-        x86_64) ARCH='x64' CHECKSUM="d267e68a33036c2f3803adaf79b7191bcf45219cc12246f61c48b891bb70e943" OPENSSL_ARCH=linux-x86_64;; \
+        x86_64) ARCH='x64' CHECKSUM="caa46f1f6463058f14f6be404bd5ec41ba33acd5a5fe936fe3b865e29063d75b" OPENSSL_ARCH=linux-x86_64;; \
         x86) OPENSSL_ARCH=linux-elf;; \
         aarch64) OPENSSL_ARCH=linux-aarch64;; \
         arm*) OPENSSL_ARCH=linux-armv4;; \
